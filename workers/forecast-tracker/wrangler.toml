@@ -18,4 +18,4 @@ SUPABASE_FORECAST_ACTUALS_TABLE = "forecast_actuals"
 # Horizons to snapshot at each run, in hours. Comma-separated so more can be
 # added later as a config change, not a code change.
 FORECAST_HORIZON_HOURS = "6,12,24"
-DRY_RUN = "true"
+DRY_RUN = "false"
