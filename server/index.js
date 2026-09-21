@@ -39,6 +39,10 @@ import {
   recordReferralVisit
 } from "./referralStore.js";
 import {
+  deleteInstallationData,
+  isDataDeletionConfigured
+} from "./dataDeletionService.js";
+import {
   isNotificationEventStoreConfigured,
   recordNotificationDismissed,
   recordNotificationOpened
@@ -456,6 +460,29 @@ app.post("/api/recommendation-events", async (req, res) => {
   } catch (error) {
     console.error("Recommendation event logging failed.", error);
     res.status(202).json({ ok: false });
+  }
+});
+
+// Backs the "Delete my data" control in Settings. Unlike the analytics
+// endpoints, this one does NOT soft-fail: if deletion did not happen the user
+// must be told so, never shown a false confirmation.
+app.delete("/api/installations/:id", async (req, res) => {
+  if (!isDataDeletionConfigured()) {
+    res.status(503).json({ error: "Data deletion is not available right now." });
+    return;
+  }
+
+  if (!isValidAnonymousDeviceId(req.params.id)) {
+    res.status(400).json({ error: "A valid installation id is required." });
+    return;
+  }
+
+  try {
+    const deleted = await deleteInstallationData(req.params.id);
+    res.status(200).json({ ok: true, deleted });
+  } catch (error) {
+    console.error("Data deletion failed.", error);
+    res.status(503).json({ error: "Data could not be deleted right now. Please try again later." });
   }
 });
 
@@ -910,6 +937,8 @@ function servePwaFiles(appInstance) {
 
   [
     "index.html",
+    "privacy.html",
+    "terms.html",
     "styles.css",
     "manifest.webmanifest",
     "sw.js"

@@ -112,6 +112,10 @@ function showOnboardingStep(step, options = {}) {
     elements.onboardingVisual.classList.add(stepCopy.visualClass);
   }
 
+  if (step === "welcome") {
+    renderOnboardingConsentNotice();
+  }
+
   if (step === "routine") {
     renderOnboardingRoutineControl();
   }
@@ -374,6 +378,42 @@ function applyOnboardingRoutineStart(routineStartTime) {
 function applyOnboardingTimeAway(timeAwayHours) {
   saveTimeAwayHours(timeAwayHours);
   initializeTimeAwaySetting();
+}
+
+// Shown on the first onboarding screen so there is an explicit moment where
+// the policies are presented before any data is collected. The notice is
+// built from a single translatable template with {terms}/{privacy} tokens, so
+// translators keep control of word order rather than being handed
+// pre-split sentence fragments.
+function renderOnboardingConsentNotice() {
+  const notice = document.createElement("p");
+  const links = {
+    "{terms}": { href: "./terms.html", label: t("onboarding.consentTerms") },
+    "{privacy}": { href: "./privacy.html", label: t("onboarding.consentPrivacy") }
+  };
+
+  notice.className = "onboarding-consent";
+
+  t("onboarding.consentNotice")
+    .split(/(\{terms\}|\{privacy\})/)
+    .forEach((part) => {
+      const link = links[part];
+
+      if (!link) {
+        notice.append(document.createTextNode(part));
+        return;
+      }
+
+      const anchor = document.createElement("a");
+
+      anchor.href = link.href;
+      anchor.target = "_blank";
+      anchor.rel = "noopener";
+      anchor.textContent = link.label;
+      notice.append(anchor);
+    });
+
+  elements.onboardingControl.replaceChildren(notice);
 }
 
 function renderOnboardingRoutineControl() {

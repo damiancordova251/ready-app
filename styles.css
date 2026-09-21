@@ -457,6 +457,74 @@ this accessible without a custom dropdown component. */
   gap: 12px;
 }
 
+/* Privacy section: policy links, this device's installation id, and the
+destructive delete-everything control. */
+.privacy-setting {
+  border-top: 1px solid var(--line);
+  padding: 14px;
+}
+
+.privacy-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 12px 0 0;
+}
+
+.privacy-links a {
+  color: var(--accent);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.installation-id-note {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+.installation-id-note code {
+  display: block;
+  margin-top: 2px;
+  word-break: break-all;
+  color: var(--text);
+  font-size: 0.75rem;
+}
+
+.privacy-setting .secondary-action {
+  width: 100%;
+  margin-top: 14px;
+}
+
+/* Destructive actions read as dangerous in both button styles. */
+.destructive-action {
+  color: var(--danger, #b91c1c);
+  border-color: currentColor;
+}
+
+.primary-action.destructive-action {
+  background: var(--danger, #b91c1c);
+  border-color: var(--danger, #b91c1c);
+  color: #ffffff;
+}
+
+/* Consent notice under the first onboarding step. */
+.onboarding-consent {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 650;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.onboarding-consent a {
+  color: var(--accent);
+  font-weight: 800;
+}
+
 .report-issue-setting {
   border-top: 1px solid var(--line);
   padding: 14px;

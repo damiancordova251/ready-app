@@ -32,6 +32,8 @@ export const elements = {
   testNotificationButton: document.querySelector("#testNotificationButton"),
   languageSelect: document.querySelector("#languageSelect"),
   reportIssueButton: document.querySelector("#reportIssueButton"),
+  deleteDataButton: document.querySelector("#deleteDataButton"),
+  installationIdValue: document.querySelector("#installationIdValue"),
   clothingPreferencesScreen: document.querySelector("#clothingPreferencesScreen"),
   clothingPreferencesForm: document.querySelector("#clothingPreferencesForm"),
   clothingPreferencesSkip: document.querySelector("#clothingPreferencesSkip"),

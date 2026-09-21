@@ -1020,6 +1020,104 @@ function pushSubscriptionsTablePath(env) {
   return encodeURIComponent(env.SUPABASE_PUSH_SUBSCRIPTIONS_TABLE || DEFAULT_PUSH_SUBSCRIPTIONS_TABLE);
 }
 
+export function isDataDeletionConfigured(env) {
+  return Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY);
+}
+
+// Deletes every row keyed to one anonymous installation id. Mirrors
+// server/dataDeletionService.js, including its ordering: children before
+// parents so no foreign key is ever left dangling, app_installations last.
+export async function deleteInstallationData(installationId, env) {
+  const deleted = {};
+
+  deleted.referralVisits = await deleteRowsWhere(
+    env, referralVisitsTablePath(env), `new_installation_id=eq.${installationId}`
+  );
+
+  const ownedCodes = await getOwnedReferralCodes(installationId, env);
+
+  if (ownedCodes.length > 0) {
+    const codeList = ownedCodes.map((code) => `"${code}"`).join(",");
+
+    deleted.referralVisits += await deleteRowsWhere(
+      env, referralVisitsTablePath(env), `referral_code=in.(${codeList})`
+    );
+  }
+
+  deleted.referrals = await deleteRowsWhere(
+    env, referralsTablePath(env), `owner_installation_id=eq.${installationId}`
+  );
+  deleted.analyticsEvents = await deleteRowsWhere(
+    env, analyticsEventsTablePath(env), `installation_id=eq.${installationId}`
+  );
+  deleted.recommendationEvents = await deleteRowsWhere(
+    env, recommendationEventsTablePath(env), `installation_id=eq.${installationId}`
+  );
+  deleted.notificationEvents = await deleteRowsWhere(
+    env, notificationEventsTablePath(env), `installation_id=eq.${installationId}`
+  );
+  deleted.feedbackSubmissions = await deleteRowsWhere(
+    env, feedbackSubmissionsTablePath(env), `installation_id=eq.${installationId}`
+  );
+  deleted.clientErrors = await deleteRowsWhere(
+    env, clientErrorsTablePath(env), `installation_id=eq.${installationId}`
+  );
+  deleted.apiPerformanceEvents = await deleteRowsWhere(
+    env, apiPerformanceEventsTablePath(env), `installation_id=eq.${installationId}`
+  );
+  deleted.pushSubscriptions = await deleteRowsWhere(
+    env, pushSubscriptionsTablePath(env), `installation_id=eq.${installationId}`
+  );
+
+  // pilot_events predates app_installations and holds the same id under its
+  // own column with no foreign key.
+  deleted.pilotEvents = await deleteRowsWhere(
+    env, pilotEventsTablePath(env), `anonymous_device_id=eq.${installationId}`
+  );
+
+  deleted.appInstallations = await deleteRowsWhere(
+    env, appInstallationsTablePath(env), `id=eq.${installationId}`
+  );
+
+  return deleted;
+}
+
+async function getOwnedReferralCodes(installationId, env) {
+  const response = await supabaseFetch(env, {
+    path: referralsTablePath(env),
+    searchParams: new URLSearchParams({
+      select: "code",
+      owner_installation_id: `eq.${installationId}`
+    })
+  });
+  const rows = await response.json();
+
+  return rows.map((row) => row.code);
+}
+
+// `filter` is a raw PostgREST filter expression (e.g. "id=eq.abc") rather than
+// a URLSearchParams pair, because "in.(...)" values must not be re-encoded.
+async function deleteRowsWhere(env, path, filter) {
+  const url = new URL(`/rest/v1/${path}?${filter}`, env.SUPABASE_URL);
+  const response = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: "return=representation"
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Supabase delete failed with ${response.status}: ${await response.text()}`);
+  }
+
+  const rows = await response.json().catch(() => []);
+
+  return Array.isArray(rows) ? rows.length : 0;
+}
+
 function pilotEventsTablePath(env) {
   return encodeURIComponent(env.SUPABASE_PILOT_EVENTS_TABLE || DEFAULT_PILOT_EVENTS_TABLE);
 }

@@ -8,6 +8,8 @@ const projectRoot = path.resolve(__dirname, "..");
 const distDir = path.join(projectRoot, "dist");
 const staticEntries = [
   "index.html",
+  "privacy.html",
+  "terms.html",
   "styles.css",
   "src",
   "icons",

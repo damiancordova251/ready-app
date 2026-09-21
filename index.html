@@ -91,6 +91,21 @@
               </div>
               <select id="languageSelect" class="language-select"></select>
             </section>
+            <section class="privacy-setting" aria-label="Privacy and your data">
+              <div class="setting-copy">
+                <span data-i18n="settings.privacyTitle">Privacy &amp; your data</span>
+                <p data-i18n="settings.privacyBody">Your exact location and clothing preferences stay on this device. To fetch the forecast, your coordinates go directly to the Open-Meteo weather service. If reminders are on, we also store your approximate area (about 11 km).</p>
+              </div>
+              <p class="privacy-links">
+                <a href="./privacy.html" target="_blank" rel="noopener" data-i18n="settings.privacyPolicyLink">Privacy Policy</a>
+                <a href="./terms.html" target="_blank" rel="noopener" data-i18n="settings.termsLink">Terms of Service</a>
+              </p>
+              <p class="installation-id-note">
+                <span data-i18n="settings.installationIdLabel">Your installation ID</span>
+                <code id="installationIdValue">—</code>
+              </p>
+              <button class="secondary-action destructive-action" id="deleteDataButton" type="button" data-i18n="settings.deleteDataButton">Delete my data</button>
+            </section>
             <section class="report-issue-setting" aria-label="Report a problem">
               <div class="setting-copy">
                 <span data-i18n="settings.reportIssueTitle">Report a problem</span>

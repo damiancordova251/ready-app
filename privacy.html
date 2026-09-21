@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<link rel="icon" href="icons/app-icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/app-icon-180.png">
+<title>Privacy Policy · Ready</title>
+<style>
+  :root {
+    color-scheme: light;
+    --text: #0f172a;
+    --muted: #475569;
+    --line: #e2e8f0;
+    --bg: #f8fafc;
+    --accent: #0f766e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 18px 64px;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 720px; margin: 0 auto; }
+  h1 { font-size: 1.6rem; margin: 0 0 4px; }
+  h2 { font-size: 1.15rem; margin: 32px 0 8px; padding-top: 16px; border-top: 1px solid var(--line); }
+  h3 { font-size: 1rem; margin: 20px 0 6px; }
+  p, li { color: var(--muted); }
+  li { margin-bottom: 6px; }
+  code { background: #eef2f7; padding: 1px 5px; border-radius: 4px; font-size: 0.88em; color: var(--text); }
+  .updated { color: var(--muted); font-size: 0.85rem; margin: 0 0 20px; }
+  .back { display: inline-block; margin-bottom: 20px; color: var(--accent); font-weight: 700; text-decoration: none; }
+  .lang-toggle { display: flex; gap: 8px; margin-bottom: 24px; }
+  .lang-toggle button {
+    border: 1px solid var(--line); background: #fff; color: var(--text);
+    border-radius: 999px; padding: 6px 14px; font: inherit; font-size: 0.85rem;
+    font-weight: 700; cursor: pointer;
+  }
+  .lang-toggle button[aria-pressed="true"] { background: var(--text); color: #fff; border-color: var(--text); }
+  .callout {
+    border: 1px solid var(--line); border-left: 3px solid var(--accent);
+    background: #fff; padding: 12px 14px; border-radius: 8px; margin: 16px 0;
+  }
+  .callout p { margin: 0; color: var(--text); font-size: 0.93rem; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.9rem; }
+  th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--text); }
+  td { color: var(--muted); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="./">&larr; Ready</a>
+
+  <div class="lang-toggle">
+    <button type="button" data-lang="en" aria-pressed="true">English</button>
+    <button type="button" data-lang="es" aria-pressed="false">Español</button>
+  </div>
+
+  <!-- ENGLISH -->
+  <section data-lang-section="en">
+    <h1>Privacy Policy</h1>
+    <p class="updated">Last updated: <!--INSERT:EFFECTIVE_DATE-->[INSERT EFFECTIVE DATE]<!--/INSERT--></p>
+
+    <div class="callout">
+      <p><strong>The short version:</strong> Ready has no accounts and never asks for your name,
+      email, or payment details. Your exact location and your clothing preferences stay on your
+      phone. If you turn on reminders, we store an approximate area (rounded to about 11&nbsp;km) so
+      the reminder can mention rain or cold. You can delete everything we hold at any time from
+      Settings.</p>
+    </div>
+
+    <h2>1. Who is responsible for your data</h2>
+    <p>Ready is operated by <!--INSERT:CONTROLLER_NAME-->[INSERT YOUR FULL LEGAL NAME]<!--/INSERT-->
+    ("we", "us"), acting as the data controller. For any privacy question or request, contact
+    <!--INSERT:CONTACT_EMAIL-->[INSERT CONTACT EMAIL ADDRESS]<!--/INSERT-->.</p>
+    <p>Ready is currently a small, non-commercial pilot. We do not sell data, we do not run
+    advertising, and we do not share data for cross-context behavioural advertising.</p>
+
+    <h2>2. What stays only on your device</h2>
+    <p>The following is stored in your browser's local storage and is never transmitted to us:</p>
+    <ul>
+      <li>Your <strong>exact location</strong> (the most recent usable coordinates, cached so the
+      checklist can load without asking again).</li>
+      <li>Your <strong>clothing preferences</strong> — the specific garments you told Ready you own.</li>
+      <li>Your settings: expected time away, reminder time, language, and onboarding progress.</li>
+    </ul>
+    <p>Clearing your browser data or using "Delete my data" in Settings removes all of it.</p>
+
+    <h2>3. What we collect and why</h2>
+    <p>Ready generates a random identifier on first use (an "installation ID"). It is not linked to
+    your name or any account, but it is persistent, so we treat it as personal data rather than
+    calling it anonymous.</p>
+
+    <table>
+      <tr><th>What</th><th>Why</th></tr>
+      <tr>
+        <td>Installation ID, first/last active time, app version, language</td>
+        <td>To count how many devices use Ready and whether people return</td>
+      </tr>
+      <tr>
+        <td>Feature usage events from a fixed list (app opened, checklist generated, reminder
+        enabled, link shared, etc.)</td>
+        <td>To understand which parts of Ready are actually used</td>
+      </tr>
+      <tr>
+        <td>Weather conditions and the checklist produced from them</td>
+        <td>To check whether recommendations are sensible</td>
+      </tr>
+      <tr>
+        <td><strong>Approximate location</strong>, rounded to one decimal degree (about 11&nbsp;km),
+        plus your timezone and reminder time — <em>only if you enable reminders</em></td>
+        <td>So a scheduled reminder can mention rain, cold, or heat, and arrive at the right local
+        time</td>
+      </tr>
+      <tr>
+        <td>Push subscription details issued by your browser</td>
+        <td>Required to deliver a notification to your device at all</td>
+      </tr>
+      <tr>
+        <td>Referral code, and whether a shared link led to a new install</td>
+        <td>To see whether sharing works</td>
+      </tr>
+      <tr>
+        <td>Feedback you submit: a rating and any text you type</td>
+        <td>To fix problems and decide what to build</td>
+      </tr>
+      <tr>
+        <td>Crash and error reports, including an error message, a short stack excerpt, and your
+        browser's user-agent string</td>
+        <td>To find and fix bugs</td>
+      </tr>
+      <tr>
+        <td>Timing of requests to the weather service</td>
+        <td>To detect when the app is slow or failing</td>
+      </tr>
+    </table>
+
+    <div class="callout">
+      <p><strong>Please don't type personal details into feedback.</strong> The feedback and
+      "report a problem" boxes are free text and we store whatever you write. Don't include your
+      name, address, phone number, or anything you wouldn't want stored.</p>
+    </div>
+
+    <h2>4. Your precise location and the weather service</h2>
+    <p>This is the one case where precise data leaves your device, so we want to be explicit about
+    it. To fetch a forecast, your browser sends your coordinates <strong>directly to Open-Meteo</strong>
+    (<code>open-meteo.com</code>), a third-party weather API, at roughly 11-metre precision. This
+    request goes from your device to Open-Meteo — it does not pass through our servers, and we
+    never receive or store those precise coordinates. Open-Meteo's own privacy terms govern that
+    request.</p>
+    <p>Separately, and only if you turn on reminders, we store a deliberately <em>coarsened</em>
+    version of your location (rounded to about 11&nbsp;km) on our servers. Rounding happens on your
+    device before anything is sent.</p>
+
+    <h2>5. Who else processes your data</h2>
+    <ul>
+      <li><strong>Cloudflare</strong> — hosts the app and its API, and runs the scheduled reminder
+      jobs. Like any web host, it processes your IP address and request metadata.</li>
+      <li><strong>Supabase</strong> — provides the database where the data in section 3 is stored.</li>
+      <li><strong>Open-Meteo</strong> — receives forecast requests as described in section 4.</li>
+      <li><strong>Apple and/or Google push services</strong> — whichever issued your browser's push
+      subscription relays reminder notifications to your device.</li>
+    </ul>
+    <p>These providers act as our processors or as independent controllers of their own
+    infrastructure data. We do not control their systems, and while we choose established providers,
+    we cannot guarantee their security. See section 9.</p>
+
+    <h2>6. Automated processing and machine learning</h2>
+    <p>Ready's clothing recommendations are produced by fixed, human-written rules — thresholds for
+    temperature, rain probability, and wind. There is no machine learning model, no profiling that
+    produces legal or similarly significant effects, and <strong>your data is never used to train
+    any AI model</strong>.</p>
+    <p>We do run a forecast-accuracy check: we record what the weather service predicted for a
+    coarse area and what actually occurred, to measure how reliable forecasts are. Those records are
+    keyed to an area, not to you, and are never used to change recommendations automatically — any
+    change requires a human to review and approve it.</p>
+
+    <h2>7. Your rights and how to use them</h2>
+    <p>Depending on where you live — including under Ecuador's Ley Orgánica de Protección de Datos
+    Personales and the California Consumer Privacy Act — you have rights to access, correct, delete,
+    and port your data, and to object to processing.</p>
+    <p><strong>The fastest way to exercise deletion is in the app:</strong> open Settings and choose
+    <em>Delete my data</em>. This immediately removes every record tied to your installation ID from
+    our database, cancels any scheduled reminders, and clears local storage on your device.</p>
+    <p>For access, correction, portability, or any other request, email
+    <!--INSERT:CONTACT_EMAIL_2-->[INSERT CONTACT EMAIL ADDRESS]<!--/INSERT-->. We will respond within
+    30 days. Because Ready has no accounts, we may need you to provide your installation ID (shown
+    in Settings) to locate your records — we cannot identify you any other way, and we will not ask
+    you for additional identifying documents.</p>
+    <p>We do not sell personal information or share it for cross-context behavioural advertising, so
+    there is nothing to opt out of in that respect. We will not discriminate against you for
+    exercising any right.</p>
+
+    <h2>8. Retention</h2>
+    <p>We keep pilot data for as long as the pilot is running, and for no longer than
+    <!--INSERT:RETENTION_PERIOD-->[INSERT RETENTION PERIOD, e.g. "12 months"]<!--/INSERT--> after
+    collection, after which it is deleted or aggregated so it can no longer be linked to a device.
+    You can delete your data sooner at any time from Settings.</p>
+
+    <h2>9. Security</h2>
+    <p>Data is transmitted over HTTPS/TLS and stored by Supabase with encryption at rest. Database
+    access requires a server-side key that is never present in the app you run; row-level security
+    is enabled on every table, with no public access policies. Access to production data is limited
+    to the operator named in section 1.</p>
+    <p>No system is perfectly secure, and we cannot and do not guarantee absolute security. We do not
+    warrant that our providers' systems will never be breached. If a breach affects your data, we
+    will notify affected users and any required authority as the law requires.</p>
+
+    <h2>10. Children</h2>
+    <p>Ready is not directed to children under 13 and we do not knowingly collect data from them. If
+    you believe a child under 13 has used Ready, contact us and we will delete the data.</p>
+
+    <h2>11. International transfers</h2>
+    <p>Our providers operate globally, so your data may be processed outside your country, including
+    in the United States and the European Union. We rely on those providers' standard contractual
+    protections for such transfers.</p>
+
+    <h2>12. Changes</h2>
+    <p>If we change this policy materially, we will update the date above and surface a notice in the
+    app. Continuing to use Ready after a change means you accept the updated policy.</p>
+  </section>
+
+  <!-- SPANISH -->
+  <section data-lang-section="es" hidden>
+    <h1>Política de Privacidad</h1>
+    <p class="updated">Última actualización: <!--INSERT:EFFECTIVE_DATE_ES-->[INSERTAR FECHA DE VIGENCIA]<!--/INSERT--></p>
+
+    <div class="callout">
+      <p><strong>En resumen:</strong> Ready no tiene cuentas y nunca te pide tu nombre, correo
+      electrónico ni datos de pago. Tu ubicación exacta y tus preferencias de ropa se quedan en tu
+      teléfono. Si activas los recordatorios, guardamos una zona aproximada (redondeada a unos
+      11&nbsp;km) para que el recordatorio pueda mencionar lluvia o frío. Puedes borrar todo lo que
+      tenemos en cualquier momento desde Configuración.</p>
+    </div>
+
+    <h2>1. Quién es responsable de tus datos</h2>
+    <p>Ready es operado por <!--INSERT:CONTROLLER_NAME_ES-->[INSERTAR TU NOMBRE LEGAL COMPLETO]<!--/INSERT-->
+    ("nosotros"), en calidad de responsable del tratamiento. Para cualquier consulta o solicitud
+    sobre privacidad, escribe a <!--INSERT:CONTACT_EMAIL_ES-->[INSERTAR CORREO DE CONTACTO]<!--/INSERT-->.</p>
+    <p>Ready es actualmente un piloto pequeño y sin fines comerciales. No vendemos datos, no
+    mostramos publicidad y no compartimos datos para publicidad conductual.</p>
+
+    <h2>2. Lo que se queda solo en tu dispositivo</h2>
+    <p>Lo siguiente se guarda en el almacenamiento local de tu navegador y nunca se nos transmite:</p>
+    <ul>
+      <li>Tu <strong>ubicación exacta</strong> (las coordenadas más recientes, guardadas para que la
+      lista cargue sin volver a preguntar).</li>
+      <li>Tus <strong>preferencias de ropa</strong>: las prendas específicas que indicaste que tienes.</li>
+      <li>Tus ajustes: tiempo fuera de casa, hora del recordatorio, idioma y progreso de la
+      configuración inicial.</li>
+    </ul>
+    <p>Borrar los datos del navegador o usar "Borrar mis datos" en Configuración elimina todo esto.</p>
+
+    <h2>3. Qué recopilamos y por qué</h2>
+    <p>Ready genera un identificador aleatorio la primera vez que lo usas ("ID de instalación"). No
+    está vinculado a tu nombre ni a ninguna cuenta, pero es persistente, así que lo tratamos como
+    dato personal en lugar de llamarlo anónimo.</p>
+
+    <table>
+      <tr><th>Qué</th><th>Para qué</th></tr>
+      <tr>
+        <td>ID de instalación, primera y última actividad, versión de la app, idioma</td>
+        <td>Para contar cuántos dispositivos usan Ready y si las personas regresan</td>
+      </tr>
+      <tr>
+        <td>Eventos de uso de una lista fija (app abierta, lista generada, recordatorio activado,
+        enlace compartido, etc.)</td>
+        <td>Para entender qué partes de Ready se usan realmente</td>
+      </tr>
+      <tr>
+        <td>Condiciones del clima y la lista generada a partir de ellas</td>
+        <td>Para verificar si las recomendaciones tienen sentido</td>
+      </tr>
+      <tr>
+        <td><strong>Ubicación aproximada</strong>, redondeada a un decimal de grado (unos
+        11&nbsp;km), más tu zona horaria y hora de recordatorio — <em>solo si activas los
+        recordatorios</em></td>
+        <td>Para que el recordatorio mencione lluvia, frío o calor y llegue a la hora local correcta</td>
+      </tr>
+      <tr>
+        <td>Datos de suscripción push emitidos por tu navegador</td>
+        <td>Necesarios para poder entregar una notificación a tu dispositivo</td>
+      </tr>
+      <tr>
+        <td>Código de referido y si un enlace compartido resultó en una nueva instalación</td>
+        <td>Para saber si compartir funciona</td>
+      </tr>
+      <tr>
+        <td>Comentarios que envías: una calificación y el texto que escribas</td>
+        <td>Para corregir problemas y decidir qué construir</td>
+      </tr>
+      <tr>
+        <td>Reportes de errores, incluyendo el mensaje de error, un fragmento técnico y la cadena
+        de identificación de tu navegador</td>
+        <td>Para encontrar y corregir fallos</td>
+      </tr>
+      <tr>
+        <td>Tiempos de respuesta del servicio del clima</td>
+        <td>Para detectar cuándo la app está lenta o fallando</td>
+      </tr>
+    </table>
+
+    <div class="callout">
+      <p><strong>Por favor no escribas datos personales en los comentarios.</strong> Las cajas de
+      comentarios y de "reportar un problema" son texto libre y guardamos lo que escribas. No
+      incluyas tu nombre, dirección, teléfono ni nada que no quieras que se almacene.</p>
+    </div>
+
+    <h2>4. Tu ubicación precisa y el servicio del clima</h2>
+    <p>Este es el único caso en que datos precisos salen de tu dispositivo, así que queremos ser
+    explícitos. Para obtener el pronóstico, tu navegador envía tus coordenadas
+    <strong>directamente a Open-Meteo</strong> (<code>open-meteo.com</code>), un servicio externo
+    del clima, con una precisión de aproximadamente 11 metros. Esa solicitud va de tu dispositivo a
+    Open-Meteo: no pasa por nuestros servidores y nunca recibimos ni guardamos esas coordenadas
+    precisas. Los términos de privacidad de Open-Meteo rigen esa solicitud.</p>
+    <p>Por separado, y solo si activas los recordatorios, guardamos en nuestros servidores una
+    versión deliberadamente <em>redondeada</em> de tu ubicación (a unos 11&nbsp;km). El redondeo
+    ocurre en tu dispositivo antes de enviar nada.</p>
+
+    <h2>5. Quién más procesa tus datos</h2>
+    <ul>
+      <li><strong>Cloudflare</strong>: aloja la app y su API, y ejecuta las tareas programadas de
+      recordatorios. Como cualquier proveedor web, procesa tu dirección IP y metadatos de las
+      solicitudes.</li>
+      <li><strong>Supabase</strong>: provee la base de datos donde se guarda lo descrito en la
+      sección 3.</li>
+      <li><strong>Open-Meteo</strong>: recibe las solicitudes de pronóstico descritas en la sección 4.</li>
+      <li><strong>Servicios push de Apple y/o Google</strong>: el que haya emitido la suscripción de
+      tu navegador entrega las notificaciones a tu dispositivo.</li>
+    </ul>
+    <p>Estos proveedores actúan como encargados del tratamiento o como responsables independientes de
+    los datos de su propia infraestructura. No controlamos sus sistemas y, aunque elegimos
+    proveedores establecidos, no podemos garantizar su seguridad. Ver la sección 9.</p>
+
+    <h2>6. Procesamiento automatizado y aprendizaje automático</h2>
+    <p>Las recomendaciones de ropa de Ready se generan con reglas fijas escritas por personas:
+    umbrales de temperatura, probabilidad de lluvia y viento. No hay ningún modelo de aprendizaje
+    automático, no hay elaboración de perfiles con efectos jurídicos o similarmente significativos, y
+    <strong>tus datos nunca se usan para entrenar ningún modelo de IA</strong>.</p>
+    <p>Sí realizamos una verificación de precisión del pronóstico: registramos lo que el servicio
+    del clima predijo para una zona aproximada y lo que realmente ocurrió, para medir qué tan
+    confiables son los pronósticos. Esos registros se asocian a una zona, no a ti, y nunca se usan
+    para cambiar recomendaciones automáticamente: cualquier cambio requiere revisión y aprobación
+    humana.</p>
+
+    <h2>7. Tus derechos y cómo ejercerlos</h2>
+    <p>Según dónde vivas —incluyendo la Ley Orgánica de Protección de Datos Personales del Ecuador y
+    la Ley de Privacidad del Consumidor de California— tienes derecho a acceder, rectificar, eliminar
+    y portar tus datos, y a oponerte al tratamiento.</p>
+    <p><strong>La forma más rápida de ejercer la eliminación es en la app:</strong> abre
+    Configuración y elige <em>Borrar mis datos</em>. Esto elimina de inmediato todo registro
+    vinculado a tu ID de instalación, cancela los recordatorios programados y limpia el
+    almacenamiento local de tu dispositivo.</p>
+    <p>Para acceso, rectificación, portabilidad o cualquier otra solicitud, escribe a
+    <!--INSERT:CONTACT_EMAIL_ES_2-->[INSERTAR CORREO DE CONTACTO]<!--/INSERT-->. Responderemos en un
+    plazo de 30 días. Como Ready no tiene cuentas, es posible que necesitemos tu ID de instalación
+    (visible en Configuración) para localizar tus registros: no podemos identificarte de otra manera
+    y no te pediremos documentos de identidad adicionales.</p>
+    <p>No vendemos información personal ni la compartimos para publicidad conductual, así que no hay
+    nada de lo que darse de baja en ese sentido. No te discriminaremos por ejercer cualquier derecho.</p>
+
+    <h2>8. Conservación</h2>
+    <p>Conservamos los datos del piloto mientras el piloto esté activo, y por no más de
+    <!--INSERT:RETENTION_PERIOD_ES-->[INSERTAR PERÍODO DE CONSERVACIÓN, p. ej. "12 meses"]<!--/INSERT-->
+    después de su recolección, tras lo cual se eliminan o se agregan de modo que ya no puedan
+    vincularse a un dispositivo. Puedes borrar tus datos antes en cualquier momento desde
+    Configuración.</p>
+
+    <h2>9. Seguridad</h2>
+    <p>Los datos se transmiten por HTTPS/TLS y Supabase los almacena con cifrado en reposo. El acceso
+    a la base de datos requiere una clave de servidor que nunca está presente en la app que ejecutas;
+    la seguridad a nivel de fila está activada en todas las tablas, sin políticas de acceso público.
+    El acceso a los datos de producción se limita a la persona indicada en la sección 1.</p>
+    <p>Ningún sistema es perfectamente seguro, y no podemos garantizar ni garantizamos seguridad
+    absoluta. No garantizamos que los sistemas de nuestros proveedores nunca sufran una brecha. Si
+    una brecha afecta tus datos, notificaremos a las personas afectadas y a la autoridad
+    correspondiente según lo exija la ley.</p>
+
+    <h2>10. Menores de edad</h2>
+    <p>Ready no está dirigido a menores de 13 años y no recopilamos datos de ellos a sabiendas. Si
+    crees que un menor de 13 años ha usado Ready, contáctanos y eliminaremos los datos.</p>
+
+    <h2>11. Transferencias internacionales</h2>
+    <p>Nuestros proveedores operan globalmente, por lo que tus datos pueden procesarse fuera de tu
+    país, incluyendo Estados Unidos y la Unión Europea. Nos apoyamos en las protecciones
+    contractuales estándar de esos proveedores para dichas transferencias.</p>
+
+    <h2>12. Cambios</h2>
+    <p>Si cambiamos esta política de forma sustancial, actualizaremos la fecha de arriba y mostraremos
+    un aviso en la app. Seguir usando Ready después de un cambio significa que aceptas la política
+    actualizada.</p>
+  </section>
+</main>
+
+<script>
+  (function () {
+    var buttons = document.querySelectorAll(".lang-toggle button");
+    var sections = document.querySelectorAll("[data-lang-section]");
+
+    function show(lang) {
+      sections.forEach(function (section) {
+        section.hidden = section.getAttribute("data-lang-section") !== lang;
+      });
+      buttons.forEach(function (button) {
+        button.setAttribute("aria-pressed", String(button.getAttribute("data-lang") === lang));
+      });
+      document.documentElement.lang = lang;
+    }
+
+    buttons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        show(button.getAttribute("data-lang"));
+      });
+    });
+
+    var saved = "en";
+
+    try {
+      saved = window.localStorage.getItem("readyLanguage") || navigator.language || "en";
+    } catch (error) {
+      saved = navigator.language || "en";
+    }
+
+    show(String(saved).toLowerCase().startsWith("es") ? "es" : "en");
+  })();
+</script>
+</body>
+</html>

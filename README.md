@@ -1,173 +1,221 @@
 # Ready
 
-Ready is a mobile-first PWA that turns the weather forecast for however long you'll be away from
-home into a simple clothing checklist. It supports English and Spanish, sends a weather-aware
-push reminder at whatever time you choose, and lets you share it with friends via a referral
-link.
+Ready is a mobile-first progressive web app that turns a weather forecast into a practical
+clothing checklist for however long you'll be away from home. It speaks English and Spanish, works
+offline once installed, and can send a daily reminder that already knows whether it's going to
+rain.
 
-## How it works
+---
 
-1. You grant location once; Ready fetches the forecast for the window you expect to be away
-   (3/6/9/12 hours) from Open-Meteo and turns it into a grouped clothing checklist (footwear,
-   pants, shirts, outerwear, accessories).
-2. Optionally, you save clothing preferences (what you actually own/wear) so the checklist
-   recommends from your own wardrobe instead of generic defaults. This stays on-device only.
-3. Optionally, you enable a daily push reminder at a routine time you set. The reminder can
-   mention rain/cold/heat if you've allowed a coarse (rounded, ~11km) location for that purpose.
-4. You can share Ready with friends via a referral link, and report a problem any time from
-   Settings.
+## What Ready does
 
-Exact location and clothing preferences never leave the device. See "Privacy" below for exactly
-what does.
+### The checklist
+You tell Ready roughly how long you'll be out — 3, 6, 9, or 12 hours — and it pulls the forecast
+for exactly that window rather than for "today" in the abstract. A 9 PM check with a 3-hour window
+only considers the next few night hours; the same check with a 12-hour window may account for
+tomorrow's daylight and afternoon rain.
 
-## Architecture
+From that window it builds a grouped checklist across five categories: footwear, pants, shirts,
+outerwear, and accessories. Every recommendation starts from a clothing foundation — one flexible
+top and one flexible bottom, usually offering two or three interchangeable options — and only adds
+accessories (umbrella, sunglasses, winter boots) when the forecast actually justifies them.
 
-- **Frontend**: vanilla JS ES modules, no bundler, no framework. Entry point `src/app.js`; feature
-  modules live under `src/features/`, with `src/{constants,state,dom,utils,services,domain,i18n}/`
-  as shared layers. `sw.js` is the service worker (must stay at the project root — service worker
-  scope is tied to where the file is served from).
-- **Hosting**: Cloudflare Pages serves the static frontend (`dist/`, built by
-  `scripts/build-pages.js`) and same-origin `/api/*` routes via Cloudflare Pages Functions
-  (`functions/`). This is the primary, production origin, and it **auto-deploys from every push to
-  `main`**.
-- **Fallback**: an Express server (`server/`) can serve the same app and API for local development
-  (`npm run dev`) and as a secondary deployment target (e.g. Render). It duplicates the Functions'
-  backend logic using Node-native packages (`@supabase/supabase-js`, `web-push`) where Cloudflare's
-  Workers runtime requires different, Workers-safe equivalents (raw REST calls, `@block65/webcrypto-web-push`).
-  This dual-runtime duplication (`server/*.js` next to `functions/_shared/backend.js`, and
-  `workers/reminder-scheduler/src/notificationCopy.js` next to `server/notificationCopy.js`) is an
-  intentional, established project convention — keep both sides in sync when changing either.
-- **Scheduled jobs**: two independent Cloudflare Workers, each with their own `wrangler.toml`,
-  deployed manually via `wrangler deploy` (not part of the Pages auto-deploy):
-  - `workers/reminder-scheduler/` — sends the daily push reminder on a 5-minute Cron Trigger. This
-    is the live, production reminder sender (Render's own interval scheduler is disabled via
-    `ENABLE_EXPRESS_SCHEDULER=false`).
-  - `workers/forecast-tracker/` — a forecast-accuracy data-collection pipeline on a 30-minute Cron
-    Trigger. Never touches recommendation logic; see its own README.
-- **Storage**: Supabase Postgres, accessed only from the backend (Express or Functions/Workers)
-  using the service-role key — the browser never talks to Supabase directly. Every table has RLS
-  enabled with no `anon`/`authenticated` policies. See `supabase/README.md` for the full schema and
-  `supabase/ANALYTICS_QUERIES.md` for example queries.
+The logic is deliberately transparent and rule-based, not a model: explicit thresholds for
+temperature, rain probability, wind, and snow, tuned so that longer windows trigger rain gear more
+readily than short ones, because there's more time to get caught out.
 
-## Project structure
+### Personal wardrobe
+Ready can ask which garments you actually own, then recommend from your wardrobe instead of
+generic defaults. If you skip this, you get sensible defaults instead — nothing breaks. These
+preferences never leave your phone.
+
+### Weather-aware reminders
+You pick a time; Ready sends one push notification a day at that time in your local timezone. The
+reminder isn't generic: if rain is likely, it says so. If it'll feel colder than usual, it says
+that instead. The message is written in whichever language you've selected, and falls back to a
+plain "your checklist is ready" if weather can't be determined.
+
+### Sharing and feedback
+A floating share button generates a personal referral link so you can pass Ready to a friend, and
+the app can tell whether a shared link actually led to someone installing it. Settings has an
+always-available "Report a problem" box for bugs, plus a periodic prompt (after three days of
+actual use) asking how it's going.
+
+### Bilingual throughout
+Every screen, button, error message, and notification exists in English and Spanish. Switching
+languages in Settings changes everything, including the wording of scheduled notifications.
+
+---
+
+## How it's built
+
+Ready is deliberately simple: **no build step, no bundler, no framework.** The frontend is plain
+ES modules served exactly as written, which keeps the whole system small enough to reason about.
+
+### The pieces
+
+**The app itself** is a static PWA — HTML, CSS, and JavaScript modules — plus a service worker that
+caches the app shell so it opens instantly and survives a bad connection. Installed to a phone's
+home screen, it behaves like a native app.
+
+**Cloudflare** does three separate jobs, which are easy to confuse:
+
+- *Cloudflare Pages* hosts the static app worldwide and serves it over HTTPS. It rebuilds and
+  redeploys automatically whenever code is pushed.
+- *Cloudflare Pages Functions* provide the API the app talks to — saving a reminder subscription,
+  recording feedback, handling referral links — running on the same domain as the app, so there's
+  no cross-origin complexity.
+- *Cloudflare Workers* run the scheduled background jobs. These are the only part of the system
+  that runs when nobody has the app open, which is exactly what a daily reminder requires.
+
+**Supabase** provides the Postgres database. Only the backend ever talks to it — the app in your
+browser has no database credentials and no direct access. Every table has row-level security
+enabled with no public access policies.
+
+**Open-Meteo** supplies the forecast data. It's free, requires no API key, and the browser queries
+it directly.
+
+### Why there are background workers
+
+A reminder has to fire at 7:00 AM whether or not the app is open, so it can't live in the frontend.
+It also can't reliably live on a free web server, which sleeps when idle and would miss the moment.
+Cloudflare Workers run on a schedule independent of any server being awake, which is what makes
+reminders dependable.
+
+Two workers run on their own timers:
+
+**The reminder scheduler** wakes every five minutes and asks a simple question of each saved
+reminder: *is it that person's chosen time right now, in their timezone, and have they already been
+sent today?* When the answer is yes-and-no, it looks up the weather for their approximate area,
+picks a matching message, sends the push notification, and records the date so nobody gets two
+reminders in one day.
+
+**The forecast tracker** wakes every thirty minutes and quietly measures how good the forecasts
+actually are. It records what the weather service predicted for a given area 6, 12, and 24 hours
+out, then later records what actually happened, and stores the difference. This is measurement
+only — it never changes the recommendations on its own. If the data ever suggests a threshold
+should move, that's a decision for a person to review and approve.
+
+### What's stored, and where
+
+Two categories, and the split is intentional:
+
+**Stays on your phone, never transmitted:** your exact location, your clothing preferences, your
+time-away and reminder settings, and your language choice. These live in browser storage.
+
+**Stored in the database:** a randomly generated installation ID (there are no accounts, no names,
+no emails, no payment details), which is used to tie together:
+
+| Area | What it holds |
+| --- | --- |
+| Installations | When a device first and last used Ready, its language, app version |
+| Usage events | Which features get used, from a fixed list of event names |
+| Recommendations | The weather conditions and the checklist produced from them |
+| Notifications | When a reminder was scheduled, sent, opened, or dismissed |
+| Reminders | Push subscription details, reminder time, timezone, and an *approximate* location rounded to ~11 km |
+| Referrals | Referral codes and whether a shared link led to an install |
+| Feedback | Ratings and written feedback |
+| Diagnostics | Errors and API response times, for debugging |
+| Forecast accuracy | Predicted vs. actual weather by area — not linked to any individual |
+
+The only location ever stored on the server is deliberately coarsened to about 11 kilometres,
+rounded on the device before it's sent, and only when reminders are switched on. Users can erase
+everything tied to their device at any time from Settings.
+
+Full detail — every table, every column, why each one exists — is in
+[`supabase/README.md`](supabase/README.md), with ready-made analytics queries in
+[`supabase/ANALYTICS_QUERIES.md`](supabase/ANALYTICS_QUERIES.md).
+
+### Privacy and terms
+
+The app ships a [Privacy Policy](privacy.html) and [Terms of Service](terms.html), both bilingual,
+linked from Settings and presented during onboarding before any data is collected. Settings also
+shows the device's installation ID (the only identifier attached to its records) and a
+**Delete my data** control that erases every associated row from the database, cancels any
+scheduled reminders, and clears local storage.
+
+---
+
+## Project layout
 
 ```
-src/                    Frontend (ES modules, no build step)
-  app.js                Bootstrap: imports and initializes every feature module
-  constants/            Shared localStorage key names
-  state/                In-memory app state
-  dom/                  Cached DOM element references
-  utils/                Small stateless helpers (formatting, browser checks, error reporting)
-  services/              API clients and analytics (weather, location, notifications, referrals)
-  domain/               Pure recommendation/checklist logic, no DOM or network access
-  i18n/                  Hand-built i18n (en/es), no dependency (see "Why no i18n library" below)
-  features/              One folder per UI feature, each owning its own DOM wiring
-  changelog.js           Shown under the update-available banner's Refresh button
+index.html            The app shell
+privacy.html          Privacy Policy (English + Spanish)
+terms.html            Terms of Service (English + Spanish)
+sw.js                 Service worker: offline caching, push notifications
+styles.css
 
-server/                 Express server: local dev + optional secondary deployment
-functions/              Cloudflare Pages Functions: production /api/* routes
-  _shared/backend.js     Shared Supabase REST + validation helpers for the Functions runtime
+src/                  Frontend, plain ES modules
+  app.js              Bootstrap — initializes each feature
+  features/           One folder per feature (checklist, onboarding, settings, …)
+  domain/             Pure recommendation logic, no DOM or network
+  services/           Weather, location, notifications, analytics, referrals
+  i18n/               English and Spanish translations
+  utils/ state/ dom/ constants/
+
+server/               Express backend — local development and a fallback host
+functions/            Cloudflare Pages Functions — the production API
 workers/
-  reminder-scheduler/    Cron Worker: sends the scheduled push reminder
-  forecast-tracker/      Cron Worker: forecast-accuracy data collection
-supabase/               SQL migrations + schema docs + example analytics queries
-tests/                  Plain node --check-able test scripts (no test framework)
-scripts/                One-off local scripts (build:pages, generate:icons)
+  reminder-scheduler/ Sends the daily reminder (see its README)
+  forecast-tracker/   Measures forecast accuracy (see its README)
+supabase/             Database schema, migrations, and query examples
+tests/                Plain Node scripts — no test framework
+scripts/              Build and icon-generation helpers
 ```
 
-## Local development
+The backend logic exists twice on purpose: once for Node (`server/`) and once for Cloudflare's
+runtime (`functions/`), which requires different, Workers-compatible libraries. When changing one,
+change both.
+
+---
+
+## Running it locally
 
 ```sh
 npm install
-cp .env.example .env
-npm run generate:vapid   # paste the output into .env
+cp .env.example .env    # then fill in the values described in that file
 npm run dev
 ```
 
-Open `http://localhost:3000`. The Express server serves both the PWA and the `/api/*` endpoints
-from one origin, matching how the service worker and push subscriptions expect same-origin API
-calls.
+Then open `http://localhost:3000`. The Express server serves the app and the API together on one
+origin, which is what the service worker and push notifications expect.
 
-### Environment variables (`.env`)
-
-```
-PORT=3000
-HOST=127.0.0.1
-VAPID_PUBLIC_KEY=
-VAPID_PRIVATE_KEY=
-VAPID_SUBJECT=mailto:you@example.com
-ENABLE_EXPRESS_SCHEDULER=true
-SCHEDULER_INTERVAL_MS=30000
-SUPABASE_URL=
-SUPABASE_SERVICE_ROLE_KEY=
-SUPABASE_PUSH_SUBSCRIPTIONS_TABLE=push_subscriptions
-SUPABASE_PILOT_EVENTS_TABLE=pilot_events
-```
-
-Every other table name (`analytics_events`, `feedback_submissions`, `referrals`, etc.) has a
-working default and only needs an env var if you renamed a table — see `supabase/README.md`.
-Never commit `.env` or any `.dev.vars` file; the service-role key and VAPID private key must never
-reach frontend code.
+`.env.example` documents every setting the backend needs. Real credentials live only in your local
+`.env` and in the hosting provider's own secret storage — never in the repository.
 
 ## Testing
 
 ```sh
-npm run check              # node --check across every server/frontend/Worker file
-npm run test:recommendations  # recommendation engine, personalized checklist, notification copy, forecast-tracker logic
-npm run build:pages        # builds the Cloudflare Pages static export into dist/
+npm run check                 # syntax-check every source file
+npm run test:recommendations  # recommendation, checklist, notification, and forecast logic
+npm run build:pages           # produce the deployable static bundle
 ```
 
-There's no test framework — `tests/*.test.js` are plain scripts using `node:assert/strict`, run
-directly with `node`. Prefer real, live verification for anything touching Supabase or push
-delivery over mocking: create a test row, verify it round-trips, then delete it.
+Tests are plain scripts using Node's built-in `assert` — no framework to learn. For anything
+touching the database or push delivery, prefer verifying against the real thing over mocking:
+create a test record, confirm it round-trips, then delete it.
 
-## Deployment
+## Deploying
 
-**Cloudflare Pages** (frontend + `/api/*`) auto-deploys from every push to `main` — nothing manual
-required. Its build command is `npm run build:pages`, output directory `dist`, functions directory
-`functions`. Required Pages variables/secrets: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`,
-`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`.
+The app and its API deploy automatically whenever changes reach the main branch — no manual step.
 
-**The two Cloudflare Workers deploy independently and manually** — a push to `main` does *not*
-redeploy them:
+The two background workers are deployed separately and manually, each from its own folder, because
+they run on Cloudflare's Workers platform rather than as part of the website. Each has a README
+covering its own setup, safety switches, and rollout order:
 
-```sh
-cd workers/reminder-scheduler && npm run deploy
-cd workers/forecast-tracker && npm run deploy
-```
+- [`workers/reminder-scheduler/README.md`](workers/reminder-scheduler/README.md)
+- [`workers/forecast-tracker/README.md`](workers/forecast-tracker/README.md)
 
-See each Worker's own README for its required secrets and safe rollout order. Both Workers commit
-their `DRY_RUN` setting directly in `wrangler.toml` rather than only in the Cloudflare dashboard —
-`wrangler deploy` re-syncs `[vars]` from that file on every deploy, so a dashboard-only override
-silently reverts on the next redeploy (this exact mistake once silently disabled all scheduled
-reminders for about a month).
+One thing worth knowing: each worker's configuration file is the source of truth for its settings.
+Changing a setting only in the Cloudflare dashboard will be silently overwritten the next time that
+worker is deployed.
 
-**Render** (optional secondary deployment of the Express server) is not required for production
-today, since Cloudflare Pages + Workers cover the same job, but the Express fallback is kept
-working for local development and as a backup path.
+---
 
-## Privacy
+## Current limitations
 
-- Exact location is never sent anywhere — it's used on-device to fetch weather, and the last
-  usable location is cached in `localStorage` only.
-- Clothing preferences stay in `localStorage` only, never sent to the backend or analytics.
-- A *coarse* location (rounded to 1 decimal degree, ~11km) is sent only if you enable reminders,
-  used only to pick weather-aware notification wording and for the forecast-accuracy pipeline's
-  regional accuracy monitoring — never for per-region recommendation tuning.
-- An anonymous, client-generated installation id (no accounts, no PII) is used for basic usage
-  analytics and the referral system.
-
-## Why no i18n/bundler library
-
-Translations are hand-written plain `.js` modules (`src/i18n/translations/en.js`/`es.js`), not
-`.json` imports — Safari's support for JSON import attributes is inconsistent across this
-project's target iOS versions. There's no bundler anywhere in the frontend: every file is served
-as-is via native ES modules, which keeps the deploy pipeline (and any future contributor's mental
-model) simple at this project's scale.
-
-## Further reading
-
-- `supabase/README.md` — full schema, what's collected and why, how to apply migrations
-- `supabase/ANALYTICS_QUERIES.md` — example queries (DAU/WAU/MAU, retention, referral conversion, notification performance, forecast accuracy)
-- `workers/reminder-scheduler/README.md` — the scheduled-reminder Worker
-- `workers/forecast-tracker/README.md` — the forecast-accuracy Worker
+- Runs entirely on free hosting tiers — appropriate for a pilot, not for guaranteed uptime.
+- No accounts, so preferences don't sync across devices and clearing browser data resets them.
+- Push notification delivery depends on Apple and Google infrastructure and can be delayed.
+- Recommendation thresholds are hand-tuned and benefit from real feedback.
+- There's no automated monitoring or alerting yet.

@@ -1,7 +1,7 @@
 // Bump APP_VERSION whenever cached app shell or icon assets need to be refreshed
 // for installed PWAs. Also add a matching entry to src/changelog.js each time —
 // that's what the update-available banner's "what's new" line shows.
-const APP_VERSION = "update-notes";
+const APP_VERSION = "privacy-consent-data-controls";
 const CACHE_NAME = `ready-${APP_VERSION}`;
 
 // Core assets use network-first caching so pilot deployments are less likely to
@@ -10,6 +10,8 @@ const CACHE_NAME = `ready-${APP_VERSION}`;
 const CORE_ASSETS = [
   "./",
   "./index.html",
+  "./privacy.html",
+  "./terms.html",
   "./styles.css",
   "./manifest.webmanifest",
   "./src/app.js",
@@ -27,6 +29,7 @@ const CORE_ASSETS = [
   "./src/services/pilotAnalytics.js",
   "./src/services/analytics.js",
   "./src/services/referralApi.js",
+  "./src/services/privacyApi.js",
   "./src/domain/recommendation.js",
   "./src/domain/personalizedChecklist.js",
   "./src/domain/clothingPreferences.js",
@@ -41,6 +44,7 @@ const CORE_ASSETS = [
   "./src/features/settings/timeAway.js",
   "./src/features/settings/routineStart.js",
   "./src/features/settings/language.js",
+  "./src/features/settings/privacyControls.js",
   "./src/features/notifications/notificationSettings.js",
   "./src/features/clothingPreferences/clothingPreferencesUI.js",
   "./src/features/feedback/feedbackPrompt.js",
@@ -199,7 +203,6 @@ async function cacheFirst(request) {
   return response;
 }
 
-// Parses backend push data and falls back to default reminder copy.
 // Best-effort only: swallows every failure so a missing id, offline device,
 // or backend hiccup never affects notification click/close behavior.
 async function reportNotificationEvent(notificationEventId, outcome) {

@@ -18,5 +18,10 @@ export const CHANGELOG = [
     version: "update-notes",
     en: "You'll now see a short note like this one whenever Ready has an update, explaining what changed.",
     es: "Ahora verás una breve nota como esta cada vez que Ready tenga una actualización, explicando qué cambió."
+  },
+  {
+    version: "privacy-consent-data-controls",
+    en: "Added a Privacy Policy and Terms of Service, clearer detail about what Ready stores, and a \"Delete my data\" button in Settings that erases everything tied to your device.",
+    es: "Se agregó una Política de Privacidad y Términos de Servicio, más detalle sobre qué guarda Ready, y un botón \"Borrar mis datos\" en Configuración que elimina todo lo vinculado a tu dispositivo."
   }
 ];
