@@ -68,5 +68,8 @@ reference earlier ones via foreign keys (e.g. `forecast_actuals` references
 
 ## Example queries
 
+New to this schema? Start with `READING_YOUR_DATA.md`, which explains where your users live,
+how the IDs connect the tables, and how to measure retention.
+
 See `supabase/ANALYTICS_QUERIES.md` for ready-to-run SQL covering DAU/WAU/MAU, retention,
 referral conversion, notification performance, recommendation usefulness, and forecast accuracy.

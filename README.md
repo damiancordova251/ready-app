@@ -123,7 +123,9 @@ rounded on the device before it's sent, and only when reminders are switched on.
 everything tied to their device at any time from Settings.
 
 Full detail — every table, every column, why each one exists — is in
-[`supabase/README.md`](supabase/README.md), with ready-made analytics queries in
+[`supabase/README.md`](supabase/README.md). For how to actually read that data (where your users
+are, how the IDs join up, how to measure retention) see
+[`supabase/READING_YOUR_DATA.md`](supabase/READING_YOUR_DATA.md), with ready-made queries in
 [`supabase/ANALYTICS_QUERIES.md`](supabase/ANALYTICS_QUERIES.md).
 
 ### Privacy and terms
