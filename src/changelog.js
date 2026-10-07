@@ -23,5 +23,10 @@ export const CHANGELOG = [
     version: "privacy-consent-data-controls",
     en: "Added a Privacy Policy and Terms of Service, clearer detail about what Ready stores, and a \"Delete my data\" button in Settings that erases everything tied to your device.",
     es: "Se agregó una Política de Privacidad y Términos de Servicio, más detalle sobre qué guarda Ready, y un botón \"Borrar mis datos\" en Configuración que elimina todo lo vinculado a tu dispositivo."
+  },
+  {
+    version: "device-context",
+    en: "Behind the scenes, Ready now records which platform and browser it is running on so we can test and support them properly. No new personal information \u2014 see the Privacy Policy in Settings.",
+    es: "Internamente, Ready ahora registra en qu\u00e9 plataforma y navegador se ejecuta para poder probarlos y mantenerlos. Ninguna informaci\u00f3n personal nueva \u2014 consulta la Pol\u00edtica de Privacidad en Configuraci\u00f3n."
   }
 ];

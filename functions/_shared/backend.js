@@ -377,7 +377,63 @@ export function toPublicSubscription(record) {
 // (and preferred_language, if provided) current via upsert. Mirrors
 // server/analyticsService.js's recordAnalyticsEvent for the Cloudflare
 // Pages Functions runtime.
-export async function recordAnalyticsEvent({ installationId, eventName, category, language, metadata, occurredAt }, env) {
+// Maps the client's device context onto app_installations columns. Mirrors
+// server/analyticsService.js's buildInstallationContext, including the sticky
+// pwa_installed rule: only ever written as true, so the column means "has this
+// device ever installed the PWA" rather than "was it standalone this session".
+// Omitted columns keep their existing value, since this feeds an upsert.
+function buildInstallationContext(deviceContext) {
+  if (!deviceContext) {
+    return {};
+  }
+
+  const context = {};
+  const set = (column, value) => {
+    if (value !== null && value !== undefined) {
+      context[column] = value;
+    }
+  };
+
+  set("timezone", deviceContext.timezone);
+  set("platform", deviceContext.platform);
+  set("os", deviceContext.os);
+  set("browser", deviceContext.browser);
+  set("device_type", deviceContext.deviceType);
+  set("notification_permission", deviceContext.notificationPermission);
+  set("reminders_enabled", deviceContext.remindersEnabled);
+  set("app_version", deviceContext.appVersion);
+
+  if (deviceContext.pwaInstalled === true) {
+    context.pwa_installed = true;
+  }
+
+  return context;
+}
+
+// Coarse device description, allow-listed to bounded values. Mirrors
+// server/index.js's sanitizeDeviceContext.
+function sanitizeDeviceContext(context) {
+  if (!context || typeof context !== "object" || Array.isArray(context)) {
+    return null;
+  }
+
+  const pick = (value, allowed) => (allowed.includes(value) ? value : null);
+  const text = (value, max) => (typeof value === "string" && value.length > 0 ? value.slice(0, max) : null);
+
+  return {
+    timezone: isValidTimezone(context.timezone) ? context.timezone : null,
+    platform: pick(context.platform, ["ios", "android", "macos", "windows", "linux", "other"]),
+    os: text(context.os, 40),
+    browser: pick(context.browser, ["safari", "chrome", "firefox", "edge", "other"]),
+    deviceType: pick(context.deviceType, ["mobile", "tablet", "desktop"]),
+    pwaInstalled: typeof context.pwaInstalled === "boolean" ? context.pwaInstalled : null,
+    notificationPermission: pick(context.notificationPermission, ["default", "granted", "denied", "unsupported"]),
+    remindersEnabled: typeof context.remindersEnabled === "boolean" ? context.remindersEnabled : null,
+    appVersion: text(context.appVersion, 20)
+  };
+}
+
+export async function recordAnalyticsEvent({ installationId, eventName, category, language, metadata, occurredAt, deviceContext }, env) {
   await supabaseFetch(env, {
     path: appInstallationsTablePath(env),
     searchParams: new URLSearchParams({ on_conflict: "id" }),
@@ -390,7 +446,8 @@ export async function recordAnalyticsEvent({ installationId, eventName, category
       body: JSON.stringify({
         id: installationId,
         last_active_at: new Date().toISOString(),
-        ...(language ? { preferred_language: language } : {})
+        ...(language ? { preferred_language: language } : {}),
+        ...buildInstallationContext(deviceContext)
       })
     }
   });
@@ -693,7 +750,8 @@ export function parseAnalyticsEventPayload(body) {
       category: typeof body?.category === "string" ? body.category.slice(0, 40) : null,
       language: isValidLanguage(body?.language) ? body.language : null,
       metadata: sanitizeAnalyticsMetadata(body?.metadata),
-      occurredAt: isValidIsoDate(body?.occurredAt) ? body.occurredAt : new Date().toISOString()
+      occurredAt: isValidIsoDate(body?.occurredAt) ? body.occurredAt : new Date().toISOString(),
+      deviceContext: sanitizeDeviceContext(body?.deviceContext)
     }
   };
 }

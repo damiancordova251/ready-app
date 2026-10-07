@@ -1,7 +1,7 @@
 // Bump APP_VERSION whenever cached app shell or icon assets need to be refreshed
 // for installed PWAs. Also add a matching entry to src/changelog.js each time —
 // that's what the update-available banner's "what's new" line shows.
-const APP_VERSION = "privacy-consent-data-controls";
+const APP_VERSION = "device-context";
 const CACHE_NAME = `ready-${APP_VERSION}`;
 
 // Core assets use network-first caching so pilot deployments are less likely to
@@ -23,6 +23,7 @@ const CORE_ASSETS = [
   "./src/utils/format.js",
   "./src/utils/browser.js",
   "./src/utils/errorReporting.js",
+  "./src/utils/deviceContext.js",
   "./src/services/weather.js",
   "./src/services/location.js",
   "./src/services/notificationsApi.js",

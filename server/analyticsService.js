@@ -45,11 +45,46 @@ export function isAnalyticsStoreConfigured() {
   return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
 }
 
-// Records one analytics event and keeps app_installations.last_active_at (and
-// preferred_language, if provided) current via upsert — a dimension-table
-// touch alongside every event, not a separate write path the client has to
-// manage itself.
-export async function recordAnalyticsEvent({ installationId, eventName, category, language, metadata, occurredAt }) {
+// Maps the client's device context onto app_installations columns. Only
+// non-null fields are included, because this is an upsert: an omitted column
+// keeps whatever value it already had rather than being overwritten with null.
+//
+// pwa_installed is deliberately sticky — it is only ever written as true. Once
+// someone has opened Ready from their home screen, that stays true even if
+// they later open it in a browser tab, so the column answers "has this device
+// ever installed the PWA" rather than "was it standalone this session".
+export function buildInstallationContext(deviceContext) {
+  if (!deviceContext) {
+    return {};
+  }
+
+  const context = {};
+  const set = (column, value) => {
+    if (value !== null && value !== undefined) {
+      context[column] = value;
+    }
+  };
+
+  set("timezone", deviceContext.timezone);
+  set("platform", deviceContext.platform);
+  set("os", deviceContext.os);
+  set("browser", deviceContext.browser);
+  set("device_type", deviceContext.deviceType);
+  set("notification_permission", deviceContext.notificationPermission);
+  set("reminders_enabled", deviceContext.remindersEnabled);
+  set("app_version", deviceContext.appVersion);
+
+  if (deviceContext.pwaInstalled === true) {
+    context.pwa_installed = true;
+  }
+
+  return context;
+}
+
+// Records one analytics event and keeps app_installations current via upsert —
+// last_active_at, language, and the device context above — a dimension-table
+// touch alongside every event, not a separate write path the client manages.
+export async function recordAnalyticsEvent({ installationId, eventName, category, language, metadata, occurredAt, deviceContext }) {
   const client = getClient();
 
   const { error: upsertError } = await client
@@ -57,7 +92,8 @@ export async function recordAnalyticsEvent({ installationId, eventName, category
     .upsert({
       id: installationId,
       last_active_at: new Date().toISOString(),
-      ...(language ? { preferred_language: language } : {})
+      ...(language ? { preferred_language: language } : {}),
+      ...buildInstallationContext(deviceContext)
     }, { onConflict: "id" });
 
   if (upsertError) {

@@ -1,6 +1,7 @@
 import { APP_CONFIG } from "../config.js";
 import { getLocale } from "../i18n/i18n.js";
 import { INSTALLATION_ID_STORAGE_KEY } from "../constants/storageKeys.js";
+import { getDeviceContext } from "../utils/deviceContext.js";
 
 // Centralized event tracker for the expanded analytics schema (see
 // supabase/migrations/). This is additive alongside — not a replacement for —
@@ -55,7 +56,10 @@ export function trackEvent(eventName, metadata = {}) {
     eventName,
     language: getLocale(),
     metadata: sanitizeMetadata(metadata),
-    occurredAt: new Date().toISOString()
+    occurredAt: new Date().toISOString(),
+    // Keeps app_installations describing the device it belongs to, rather
+    // than leaving those columns at their defaults.
+    deviceContext: getDeviceContext()
   });
 
   if (navigator.sendBeacon) {

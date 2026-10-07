@@ -39,11 +39,19 @@ columns below to find the people who actually stuck around.
 | `last_active_at` | The last time it did anything — your best signal of who's still around |
 | `preferred_language` | `en` or `es` |
 | `referral_code` | Set if this install arrived through someone's shared link |
-| `app_version` | Useful when a bug only affects older installs |
+| `app_version` | Which version of Ready the device last ran |
+| `pwa_installed` | **`true` = this device has installed Ready to its home screen.** Sticky: once true it stays true, so it means "has ever installed", not "was standalone this session" |
+| `timezone` | IANA zone, e.g. `America/Guayaquil` — your best proxy for *where* someone is |
+| `platform` | `ios` / `android` / `macos` / `windows` / `linux` / `other` |
+| `os` | Platform plus version where detectable, e.g. `iOS 18.2` |
+| `browser` | `safari` / `chrome` / `firefox` / `edge` / `other` |
+| `device_type` | `mobile` / `tablet` / `desktop` |
+| `notification_permission` | `default` / `granted` / `denied` / `unsupported` |
+| `reminders_enabled` | Whether reminders are on *right now* — unlike `pwa_installed`, this flips back to false if they turn them off |
 
-Several other columns (`platform`, `browser`, `os`, `device_type`, `pwa_installed`,
-`notification_permission`, `reminders_enabled`) exist in the schema but **are not currently being
-filled in** — nothing writes to them yet. Don't trust them; they'll read as null or default.
+> **Rows created before 7 October 2026 will have these columns empty.** Nothing wrote to them
+> before that date. They fill in the next time each device opens Ready, so coverage improves on its
+> own as people return — but an install that never comes back will stay blank forever.
 
 ---
 
@@ -112,6 +120,49 @@ These three are **not linked to any person** — they're keyed to a rough geogra
 
 ---
 
+## Counting PWA installs
+
+Installing to the home screen is a deliberate act, so it's a much stronger engagement signal than
+"opened the app once".
+
+**How many devices have installed it:**
+
+```sql
+select count(*) from app_installations where pwa_installed = true;
+```
+
+**Who they are, and where:**
+
+```sql
+select id, timezone, platform, os, device_type, first_seen_at, last_active_at
+from app_installations
+where pwa_installed = true
+order by last_active_at desc;
+```
+
+**When each one installed** — `pwa_installed` is a flag, not a date, so the install moment is the
+first session that ran standalone. That lives in the event stream, and works retroactively back to
+July:
+
+```sql
+select installation_id, min(occurred_at) as installed_at
+from analytics_events
+where event_name = 'session_started'
+  and metadata->>'standalone' = 'true'
+group by installation_id
+order by installed_at desc;
+```
+
+**Where your users are, generally:**
+
+```sql
+select timezone, count(*) from app_installations
+where timezone is not null
+group by timezone order by count desc;
+```
+
+---
+
 ## Tracking retention
 
 Retention is just: *of the people who showed up, how many came back?* You can answer it from
@@ -158,11 +209,11 @@ group by cohort_week order by cohort_week desc;
 
 ## Your numbers right now
 
-Snapshot taken 21 September 2026, for orientation — re-run the queries above for current figures.
+Snapshot taken 7 October 2026, for orientation — re-run the queries above for current figures.
 
 | Metric | Value | Read it as |
 | --- | --- | --- |
-| Total installations | **56** | Devices that have opened Ready since 19 July |
+| Total installations | **63** | Devices that have opened Ready since 19 July |
 | Came back after the first hour | **6** | Your actual returning users |
 | Active in the last 7 days | **6** | Currently engaged |
 | Reminders enabled | **4** | People receiving daily notifications |
@@ -172,7 +223,7 @@ Snapshot taken 21 September 2026, for orientation — re-run the queries above f
 
 Two things worth your attention:
 
-**Almost nobody comes back.** 6 of 56 returned after their first session. For a pilot that's the
+**Almost nobody comes back.** Only a handful returned after their first session. For a pilot that's the
 single most important number on this page — it says people will try Ready once but haven't yet
 found a reason to make it a habit. Worth asking your returning users what made them stay.
 

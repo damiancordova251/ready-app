@@ -642,8 +642,33 @@ function parseAnalyticsEventPayload(body) {
       category: typeof body?.category === "string" ? body.category.slice(0, 40) : null,
       language: isValidLanguage(body?.language) ? body.language : null,
       metadata: sanitizeAnalyticsMetadata(body?.metadata),
-      occurredAt: isValidIsoDate(body?.occurredAt) ? body.occurredAt : new Date().toISOString()
+      occurredAt: isValidIsoDate(body?.occurredAt) ? body.occurredAt : new Date().toISOString(),
+      deviceContext: sanitizeDeviceContext(body?.deviceContext)
     }
+  };
+}
+
+// Coarse device description for app_installations. Every field is optional
+// and allow-listed to a bounded set of values, so an unexpected or oversized
+// client payload can never reach the table.
+function sanitizeDeviceContext(context) {
+  if (!context || typeof context !== "object" || Array.isArray(context)) {
+    return null;
+  }
+
+  const pick = (value, allowed) => (allowed.includes(value) ? value : null);
+  const text = (value, max) => (typeof value === "string" && value.length > 0 ? value.slice(0, max) : null);
+
+  return {
+    timezone: isValidTimezone(context.timezone) ? context.timezone : null,
+    platform: pick(context.platform, ["ios", "android", "macos", "windows", "linux", "other"]),
+    os: text(context.os, 40),
+    browser: pick(context.browser, ["safari", "chrome", "firefox", "edge", "other"]),
+    deviceType: pick(context.deviceType, ["mobile", "tablet", "desktop"]),
+    pwaInstalled: typeof context.pwaInstalled === "boolean" ? context.pwaInstalled : null,
+    notificationPermission: pick(context.notificationPermission, ["default", "granted", "denied", "unsupported"]),
+    remindersEnabled: typeof context.remindersEnabled === "boolean" ? context.remindersEnabled : null,
+    appVersion: text(context.appVersion, 20)
   };
 }
 
