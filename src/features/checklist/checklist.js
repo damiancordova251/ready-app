@@ -436,7 +436,7 @@ export function getSavedLocationForThisDevice() {
       return {
         latitude: Number(location.latitude),
         longitude: Number(location.longitude),
-        accuracy: Number.isFinite(Number(location.accuracy)) ? Number(location.accuracy) : null,
+        accuracy: toAccuracy(location.accuracy),
         savedAt: location.savedAt ?? null
       };
     }
@@ -458,7 +458,7 @@ export function saveLocationForThisDevice(location) {
     window.localStorage.setItem(SAVED_LOCATION_STORAGE_KEY, JSON.stringify({
       latitude: Number(location.latitude),
       longitude: Number(location.longitude),
-      accuracy: Number.isFinite(Number(location.accuracy)) ? Number(location.accuracy) : null,
+      accuracy: toAccuracy(location.accuracy),
       savedAt: new Date().toISOString()
     }));
   } catch (error) {
@@ -472,6 +472,18 @@ export function toReminderLocation(location) {
     longitude: location.longitude,
     accuracy: location.accuracy
   };
+}
+
+// Number(null) is 0, so a plain Number.isFinite check would record a city
+// centroid as 0 metres — i.e. perfect precision — when the truth is "unknown".
+function toAccuracy(value) {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  const accuracy = Number(value);
+
+  return Number.isFinite(accuracy) ? accuracy : null;
 }
 
 function isValidSavedLocation(location) {

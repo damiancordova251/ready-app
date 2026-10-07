@@ -5,9 +5,10 @@ import {
   ONBOARDING_STARTED_STORAGE_KEY
 } from "../../constants/storageKeys.js";
 import { formatHourLabel, formatTimeLabel } from "../../utils/format.js";
-import { prefersReducedMotion } from "../../utils/browser.js";
+import { isInAppBrowser, prefersReducedMotion } from "../../utils/browser.js";
 import { t } from "../../i18n/i18n.js";
-import { getCurrentLocation } from "../../services/location.js";
+import { getCurrentLocation, LocationAccessError } from "../../services/location.js";
+import { CitySearchError, searchCities } from "../../services/geocoding.js";
 import { fetchTodayWeather, WeatherFetchError } from "../../services/weather.js";
 import { requestNotificationPermission } from "../../services/notificationsApi.js";
 import { trackPilotEvent } from "../../services/pilotAnalytics.js";
@@ -124,6 +125,10 @@ function showOnboardingStep(step, options = {}) {
     renderOnboardingLocationControl();
   }
 
+  if (step === "city") {
+    renderOnboardingCityControl();
+  }
+
   if (step === "timeAway") {
     renderOnboardingTimeAwayControl();
   }
@@ -166,6 +171,16 @@ function getOnboardingStepCopy(step) {
       title: t("onboarding.locationTitle"),
       body: t("onboarding.locationBody"),
       primaryLabel: t("onboarding.locationPrimary"),
+      secondaryLabel: t("onboarding.locationUseCity"),
+      visualClass: "is-location"
+    },
+    city: {
+      progress: t("onboarding.cityProgress"),
+      kicker: t("onboarding.cityKicker"),
+      title: t("onboarding.cityTitle"),
+      body: t("onboarding.cityBody"),
+      primaryLabel: t("onboarding.cityPrimary"),
+      secondaryLabel: t("onboarding.locationUseGps"),
       visualClass: "is-location"
     },
     routine: {
@@ -220,6 +235,11 @@ async function handleOnboardingPrimaryAction() {
     return;
   }
 
+  if (state.onboardingStep === "city") {
+    await handleOnboardingCitySearch();
+    return;
+  }
+
   if (state.onboardingStep === "routine") {
     applyOnboardingRoutineStart(getOnboardingRoutineStartValue());
     showOnboardingStep("timeAway");
@@ -243,6 +263,16 @@ async function handleOnboardingPrimaryAction() {
 }
 
 function handleOnboardingSecondaryAction() {
+  if (state.onboardingStep === "location") {
+    showOnboardingStep("city");
+    return;
+  }
+
+  if (state.onboardingStep === "city") {
+    showOnboardingStep("location");
+    return;
+  }
+
   if (state.onboardingStep === "setup") {
     applyOnboardingDefaults();
     state.onboardingSkipOptionalSteps = true;
@@ -416,6 +446,110 @@ function renderOnboardingConsentNotice() {
   elements.onboardingControl.replaceChildren(notice);
 }
 
+// City entry: a text field plus a results list. Rendered into the same
+// onboardingControl slot every other step uses, so step switching clears it.
+function renderOnboardingCityControl() {
+  const wrapper = document.createElement("div");
+  const input = document.createElement("input");
+  const results = document.createElement("div");
+
+  wrapper.className = "onboarding-city";
+
+  input.type = "text";
+  input.id = "onboardingCityInput";
+  input.className = "onboarding-city-input";
+  input.placeholder = t("onboarding.cityPlaceholder");
+  input.autocomplete = "off";
+  input.setAttribute("aria-label", t("onboarding.cityTitle"));
+
+  // Enter should search, not submit anything or reload the step.
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleOnboardingCitySearch();
+    }
+  });
+
+  results.className = "onboarding-city-results";
+  results.id = "onboardingCityResults";
+
+  wrapper.append(input, results);
+  elements.onboardingControl.replaceChildren(wrapper);
+  input.focus();
+}
+
+async function handleOnboardingCitySearch() {
+  const input = document.querySelector("#onboardingCityInput");
+  const results = document.querySelector("#onboardingCityResults");
+
+  if (!input || !results) {
+    return;
+  }
+
+  elements.onboardingPrimary.disabled = true;
+  elements.onboardingMessage.textContent = t("onboarding.citySearching");
+  results.replaceChildren();
+
+  try {
+    const matches = await searchCities(input.value);
+
+    elements.onboardingMessage.textContent = matches.length === 0
+      ? t("onboarding.cityNoResults")
+      : "";
+
+    matches.forEach((match) => {
+      const button = document.createElement("button");
+
+      button.type = "button";
+      button.className = "onboarding-city-result";
+      button.textContent = match.label;
+      button.addEventListener("click", () => applyOnboardingCity(match));
+      results.append(button);
+    });
+  } catch (error) {
+    elements.onboardingMessage.textContent = error instanceof CitySearchError && error.code === "TOO_SHORT"
+      ? t("onboarding.cityTooShort")
+      : t("onboarding.citySearchFailed");
+  } finally {
+    elements.onboardingPrimary.disabled = false;
+  }
+}
+
+// A chosen city joins the same path a GPS fix takes, so everything
+// downstream — weather, reminders, the coarse location sent with a
+// subscription — behaves identically from here on.
+async function applyOnboardingCity(city) {
+  const requestedAt = new Date();
+
+  elements.onboardingPrimary.disabled = true;
+  elements.onboardingSecondary.disabled = true;
+  elements.onboardingMessage.textContent = t("onboarding.citySelected", { city: city.label });
+
+  const location = { latitude: city.latitude, longitude: city.longitude, accuracy: null };
+
+  try {
+    state.latestLocation = toReminderLocation(location);
+    saveLocationForThisDevice(state.latestLocation);
+    renderNotificationSetting();
+    trackPilotEvent("location_updated", { source: "onboarding_city" });
+    elements.onboardingMessage.textContent = t("onboarding.checkingWeather");
+
+    state.onboardingWeather = await fetchTodayWeather(location);
+    state.onboardingRequestedAt = requestedAt;
+
+    if (state.onboardingSkipOptionalSteps) {
+      showOnboardingStep("creating");
+      return;
+    }
+
+    showOnboardingStep("routine");
+  } catch (error) {
+    elements.onboardingPrimary.disabled = false;
+    elements.onboardingSecondary.disabled = false;
+    elements.onboardingMessage.textContent = getOnboardingLocationError(error);
+  }
+}
+
 function renderOnboardingRoutineControl() {
   const wrapper = document.createElement("label");
   const value = document.createElement("strong");
@@ -505,9 +639,30 @@ function getOnboardingTimeAwayValue() {
   return isValidTimeAwayHours(value) ? value : ONBOARDING_DEFAULT_TIME_AWAY_HOURS;
 }
 
+// The specific failure matters: "allow location access" is useless advice to
+// someone in an in-app browser that never shows a prompt, or to someone who
+// denied it once and will never be asked again.
 function getOnboardingLocationError(error) {
   if (error instanceof WeatherFetchError) {
     return t("onboarding.locationErrorWeatherFailed");
+  }
+
+  if (error instanceof LocationAccessError) {
+    if (isInAppBrowser() && (error.code === "DENIED" || error.code === "UNAVAILABLE" || error.code === "TIMEOUT")) {
+      return t("onboarding.locationErrorInAppBrowser");
+    }
+
+    const byCode = {
+      DENIED: "onboarding.locationErrorDenied",
+      UNAVAILABLE: "onboarding.locationErrorUnavailable",
+      TIMEOUT: "onboarding.locationErrorTimeout",
+      INSECURE_CONTEXT: "onboarding.locationErrorInsecure",
+      UNSUPPORTED: "onboarding.locationErrorUnsupported"
+    };
+
+    if (byCode[error.code]) {
+      return t(byCode[error.code]);
+    }
   }
 
   return t("onboarding.locationErrorGeneric");

@@ -28,5 +28,10 @@ export const CHANGELOG = [
     version: "device-context",
     en: "Behind the scenes, Ready now records which platform and browser it is running on so we can test and support them properly. No new personal information \u2014 see the Privacy Policy in Settings.",
     es: "Internamente, Ready ahora registra en qu\u00e9 plataforma y navegador se ejecuta para poder probarlos y mantenerlos. Ninguna informaci\u00f3n personal nueva \u2014 consulta la Pol\u00edtica de Privacidad en Configuraci\u00f3n."
+  },
+  {
+    version: "city-location-fallback",
+    en: "If your device can't share a location \u2014 which often happens when Ready is opened inside another app \u2014 you can now type in a city instead of being stuck on the setup screen.",
+    es: "Si tu dispositivo no puede compartir la ubicaci\u00f3n \u2014 algo com\u00fan cuando Ready se abre dentro de otra aplicaci\u00f3n \u2014 ahora puedes escribir una ciudad en lugar de quedarte atascado en la pantalla de configuraci\u00f3n."
   }
 ];

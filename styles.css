@@ -511,6 +511,57 @@ destructive delete-everything control. */
 }
 
 /* Consent notice under the first onboarding step. */
+/* City entry fallback on the location step, for people whose device or
+in-app browser cannot provide a GPS fix. */
+.onboarding-city {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.onboarding-city-input {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0 12px;
+  background: #ffffff;
+  color: var(--text);
+  font: inherit;
+  font-size: 1rem;
+}
+
+.onboarding-city-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.onboarding-city-results {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.onboarding-city-result {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 11px 12px;
+  background: #ffffff;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.onboarding-city-result:hover,
+.onboarding-city-result:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .onboarding-consent {
   margin: 0;
   color: var(--muted);

@@ -8,3 +8,16 @@ export function isStandalonePwa() {
 export function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
+
+// Links shared through the native share sheet usually land in a messaging
+// app's in-app browser rather than Safari or Chrome. Several of those
+// webviews block geolocation outright, or never surface the permission
+// prompt, which looks to the user like the button simply does nothing.
+// Detecting it lets the UI say something true instead of "please allow
+// location access", for which there is no prompt to allow.
+export function isInAppBrowser() {
+  const userAgent = typeof navigator.userAgent === "string" ? navigator.userAgent : "";
+
+  return /Instagram|FBAN|FBAV|FB_IAB|Messenger|Line\/|Snapchat|TikTok|BytedanceWebview|musical_ly|LinkedInApp|Pinterest|Twitter/i
+    .test(userAgent);
+}
