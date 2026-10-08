@@ -168,6 +168,12 @@
     to Open-Meteo's geocoding service to look up its coordinates — again directly from your device,
     not through our servers. We store only the resulting coordinates, on your device, exactly as we
     would a GPS fix.</p>
+    <p>To show you which place your forecast is for, Ready looks up the name of the nearest town or
+    city. Only the <em>rounded</em> (~11&nbsp;km) version of your location is sent for this, to
+    BigDataCloud's reverse-geocoding service, directly from your device. Because the location is
+    rounded first, the name you see may be the nearest larger city rather than your exact
+    neighbourhood. The result is stored on your device only, and looked up once per location rather
+    than every time you open Ready.</p>
 
     <h2>5. Who else processes your data</h2>
     <ul>
@@ -175,6 +181,8 @@
       jobs. Like any web host, it processes your IP address and request metadata.</li>
       <li><strong>Supabase</strong> — provides the database where the data in section 3 is stored.</li>
       <li><strong>Open-Meteo</strong> — receives forecast requests as described in section 4.</li>
+      <li><strong>BigDataCloud</strong> — receives the rounded (~11&nbsp;km) location to return a
+      nearby place name, as described in section 4.</li>
       <li><strong>Apple and/or Google push services</strong> — whichever issued your browser's push
       subscription relays reminder notifications to your device.</li>
     </ul>
@@ -345,6 +353,12 @@
     se envía al servicio de geocodificación de Open-Meteo para obtener sus coordenadas, nuevamente
     directo desde tu dispositivo y no a través de nuestros servidores. Solo guardamos las
     coordenadas resultantes, en tu dispositivo, igual que haríamos con una ubicación GPS.</p>
+    <p>Para mostrarte a qué lugar corresponde tu pronóstico, Ready consulta el nombre de la ciudad o
+    población más cercana. Para esto solo se envía la versión <em>redondeada</em> (~11&nbsp;km) de tu
+    ubicación, al servicio de geocodificación inversa de BigDataCloud, directamente desde tu
+    dispositivo. Como la ubicación se redondea primero, el nombre que veas puede ser el de la ciudad
+    grande más cercana y no el de tu barrio exacto. El resultado se guarda solo en tu dispositivo y
+    se consulta una vez por ubicación, no cada vez que abres Ready.</p>
 
     <h2>5. Quién más procesa tus datos</h2>
     <ul>
@@ -354,6 +368,8 @@
       <li><strong>Supabase</strong>: provee la base de datos donde se guarda lo descrito en la
       sección 3.</li>
       <li><strong>Open-Meteo</strong>: recibe las solicitudes de pronóstico descritas en la sección 4.</li>
+      <li><strong>BigDataCloud</strong>: recibe la ubicación redondeada (~11&nbsp;km) para devolver
+      el nombre de un lugar cercano, como se describe en la sección 4.</li>
       <li><strong>Servicios push de Apple y/o Google</strong>: el que haya emitido la suscripción de
       tu navegador entrega las notificaciones a tu dispositivo.</li>
     </ul>

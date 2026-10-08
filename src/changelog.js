@@ -48,5 +48,10 @@ export const CHANGELOG = [
     version: "weather-headline",
     en: "The top of the screen now shows the current temperature and conditions at a glance. Fixes a bug where the location could be labelled with the wrong city.",
     es: "La parte superior de la pantalla ahora muestra la temperatura y las condiciones actuales de un vistazo. Corrige un error que mostraba la ciudad equivocada."
+  },
+  {
+    version: "place-name-lookup",
+    en: "Ready now names the town your forecast is for, so you can tell at a glance which location it is using.",
+    es: "Ready ahora muestra la localidad a la que corresponde tu pron\u00f3stico, para que sepas de un vistazo qu\u00e9 ubicaci\u00f3n est\u00e1 usando."
   }
 ];

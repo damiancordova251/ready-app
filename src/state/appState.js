@@ -4,6 +4,8 @@ import { getSavedPushSubscriptionId } from "../services/notificationsApi.js";
 // import and mutate this directly, mirroring the previous single-file
 // closure but making the shared shape explicit and easy to find.
 export const state = {
+  // Guards the one-shot reverse-geocode so a re-render cannot fire a second.
+  placeNameLookupInFlight: false,
   latestWeather: null,
   latestRecommendationRequestedAt: null,
   latestLocation: null,

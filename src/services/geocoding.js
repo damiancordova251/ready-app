@@ -74,3 +74,55 @@ function buildLabel(result) {
     .filter((part) => typeof part === "string" && part.length > 0)
     .join(", ");
 }
+
+// Turns coordinates into a city name, so someone using GPS sees "52° in
+// Cambridge" rather than an unlabelled temperature.
+//
+// Deliberately sends only the COARSE location — the same ~11km rounding
+// already applied before anything leaves the device for reminders — so this
+// reveals nothing the app does not already store. City names do not change
+// within 11km, so the extra precision would buy nothing anyway.
+//
+// Uses BigDataCloud's client-side reverse geocoder: free, no key, no account.
+// Returns null on any failure; the caller then shows the temperature without
+// a place, which is a fine outcome rather than an error worth surfacing.
+const REVERSE_GEOCODING_URL = "https://api-bdc.net/data/reverse-geocode-client";
+
+export async function reverseGeocodeCoarse(latitude, longitude) {
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return null;
+  }
+
+  const url = new URL(REVERSE_GEOCODING_URL);
+
+  url.search = new URLSearchParams({
+    latitude: toCoarse(latitude),
+    longitude: toCoarse(longitude),
+    localityLanguage: getLocale()
+  }).toString();
+
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+
+    // city is empty for some areas; locality and principalSubdivision are the
+    // sensible fallbacks before giving up entirely.
+    const place = [data.city, data.locality, data.principalSubdivision]
+      .find((value) => typeof value === "string" && value.trim().length > 0);
+
+    return place ? place.trim() : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+// Same rounding as services/notificationsApi.js applies before sending a
+// location to our own backend.
+function toCoarse(value) {
+  return String(Math.round(value * 10) / 10);
+}

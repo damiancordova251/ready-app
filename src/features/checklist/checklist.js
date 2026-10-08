@@ -18,6 +18,7 @@ import { getChecklistPrompt, getSavedTimeAwayHours } from "../settings/timeAway.
 import { renderNotificationSetting } from "../notifications/notificationSettings.js";
 import { renderFacts, resetFacts } from "../weatherScreen/weatherScreen.js";
 import { openCityPicker } from "../location/cityPicker.js";
+import { reverseGeocodeCoarse } from "../../services/geocoding.js";
 
 // Wires the main checklist screen's own controls. Other features (onboarding,
 // time-away commit) call the exported render/location helpers directly rather
@@ -189,6 +190,38 @@ function renderRecommendation(weather, timeAwayHours, checklist) {
   renderItems(checklist);
   updateCompletionState();
   renderFacts(weather);
+  resolvePlaceNameIfMissing(weather);
+}
+
+
+// A GPS fix has no place name of its own. Resolve one once, store it on the
+// saved location, and reuse it from then on — so this costs one request per
+// location change, not one per app open. A new GPS fix clears the label,
+// which is what re-triggers this.
+async function resolvePlaceNameIfMissing(weather) {
+  const saved = getSavedLocationForThisDevice();
+
+  if (!saved || saved.label || state.placeNameLookupInFlight) {
+    return;
+  }
+
+  state.placeNameLookupInFlight = true;
+
+  try {
+    const place = await reverseGeocodeCoarse(saved.latitude, saved.longitude);
+
+    if (!place) {
+      return;
+    }
+
+    saveLocationForThisDevice({ ...saved, label: place });
+
+    // Only the headline depends on the name, so re-render that rather than
+    // regenerating the whole checklist.
+    elements.recommendationTitle.textContent = buildConditionsHeadline(weather);
+  } finally {
+    state.placeNameLookupInFlight = false;
+  }
 }
 
 // The headline is the weather itself — "\u2600\ufe0f 51\u00b0 in Guayaquil" — rather than a

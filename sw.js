@@ -1,7 +1,7 @@
 // Bump APP_VERSION whenever cached app shell or icon assets need to be refreshed
 // for installed PWAs. Also add a matching entry to src/changelog.js each time —
 // that's what the update-available banner's "what's new" line shows.
-const APP_VERSION = "weather-headline";
+const APP_VERSION = "place-name-lookup";
 const CACHE_NAME = `ready-${APP_VERSION}`;
 
 // Core assets use network-first caching so pilot deployments are less likely to
