@@ -43,5 +43,10 @@ export const CHANGELOG = [
     version: "compact-screen-weather-notifications",
     en: "Everything now fits on one screen \u2014 no scrolling for your checklist. Ready also shows which place the forecast is for, and daily reminders now tell you the weather and the one thing to bring, like \"70% chance of rain \u2014 bring an umbrella\".",
     es: "Todo cabe ahora en una pantalla, sin desplazarte. Ready tambi\u00e9n muestra de qu\u00e9 lugar es el pron\u00f3stico, y los recordatorios diarios ahora te dicen el clima y lo \u00fanico que debes llevar, como \"70% de probabilidad de lluvia \u2014 lleva un paraguas\"."
+  },
+  {
+    version: "weather-headline",
+    en: "The top of the screen now shows the current temperature and conditions at a glance. Fixes a bug where the location could be labelled with the wrong city.",
+    es: "La parte superior de la pantalla ahora muestra la temperatura y las condiciones actuales de un vistazo. Corrige un error que mostraba la ciudad equivocada."
   }
 ];

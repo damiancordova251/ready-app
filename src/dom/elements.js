@@ -8,7 +8,6 @@ export const elements = {
   checklistScreen: document.querySelector("#checklistScreen"),
   weatherScreen: document.querySelector("#weatherScreen"),
   kicker: document.querySelector("#kicker"),
-  locationLine: document.querySelector("#locationLine"),
   recommendationTitle: document.querySelector("#recommendationTitle"),
   reasonText: document.querySelector("#reasonText"),
   itemList: document.querySelector("#itemList"),

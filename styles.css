@@ -146,10 +146,14 @@ margin, which cost most of a phone screen before a single checklist row. */
   min-height: 0;
   margin: 2px 0 0;
   color: var(--text);
-  font-size: clamp(1.45rem, 6.5vw, 1.85rem);
-  line-height: 1.1;
+  font-size: clamp(1.45rem, 6.6vw, 1.95rem);
+  line-height: 1.15;
   letter-spacing: 0;
   text-align: left;
+  /* A long city name must not wrap to a second line and push the checklist
+  below the fold — shrink the name rather than grow the header. */
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .completion-mark {
@@ -178,24 +182,12 @@ margin, which cost most of a phone screen before a single checklist row. */
 
 .reason {
   min-height: 0;
-  margin: 10px 0 2px;
-  color: var(--muted);
-  font-size: 0.92rem;
-  line-height: 1.35;
-  text-align: left;
-}
-
-/* Shows which place the forecast is for, so people stop re-tapping "Update
-location" just to check which one is in use. */
-.location-line {
-  margin: 0 0 12px;
+  margin: 8px 0 12px;
   color: var(--muted);
   font-size: 0.82rem;
-  font-weight: 700;
-}
-
-.location-line[hidden] {
-  display: none;
+  font-weight: 650;
+  line-height: 1.35;
+  text-align: left;
 }
 
 /* Checklist rows use real checkboxes for accessibility while styling a custom

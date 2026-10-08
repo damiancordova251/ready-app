@@ -6,6 +6,7 @@ import { fetchTodayWeather, WeatherFetchError } from "../../services/weather.js"
 import { trackPilotEvent } from "../../services/pilotAnalytics.js";
 import { recordRecommendationEvent, trackEvent } from "../../services/analytics.js";
 import { t } from "../../i18n/i18n.js";
+import { formatWeatherEmoji } from "../../utils/format.js";
 import { translateDomainString } from "../../i18n/domainStrings.js";
 import {
   buildWindowWeather,
@@ -180,7 +181,7 @@ function summarizeWeatherConditions(weather) {
 function renderRecommendation(weather, timeAwayHours, checklist) {
   elements.appShell.classList.remove("is-error", "is-warning", "is-complete");
   elements.kicker.textContent = t("checklist.todayKicker");
-  elements.recommendationTitle.textContent = t("checklist.title");
+  elements.recommendationTitle.textContent = buildConditionsHeadline(weather);
   elements.reasonText.textContent = getChecklistPrompt(timeAwayHours);
   elements.primaryAction.disabled = false;
   elements.primaryAction.textContent = t("checklist.primaryActionUpdateLocation");
@@ -188,37 +189,30 @@ function renderRecommendation(weather, timeAwayHours, checklist) {
   renderItems(checklist);
   updateCompletionState();
   renderFacts(weather);
-  renderLocationLine(weather);
 }
 
-// Tells people which place the forecast is for, so they stop re-tapping
-// "Update location" just to check. A typed city keeps its own name; for a GPS
-// fix we read the city out of the forecast's IANA timezone
-// ("America/Guayaquil" -> "Guayaquil"), which costs no extra request and is
-// close enough to be reassuring.
-function renderLocationLine(weather) {
-  if (!elements.locationLine) {
-    return;
+// The headline is the weather itself — "\u2600\ufe0f 51\u00b0 in Guayaquil" — rather than a
+// "Ready Checklist:" title that repeated the app name for no information.
+//
+// The place is only named when it is actually known: a city the user typed.
+// It is deliberately NOT derived from the forecast timezone any more. That
+// looked clever and was wrong — Cambridge, Massachusetts reports
+// America/New_York, so a Cambridge user was told their weather was "for New
+// York" while the forecast underneath was correctly theirs.
+function buildConditionsHeadline(weather) {
+  const temperature = weather?.current?.temperature;
+  const emoji = formatWeatherEmoji(weather?.current?.weatherCode);
+
+  if (!Number.isFinite(temperature)) {
+    return t("checklist.title");
   }
 
-  const saved = getSavedLocationForThisDevice();
-  const place = saved?.label || cityFromTimezone(weather?.timezone);
+  const degrees = Math.round(temperature);
+  const place = getSavedLocationForThisDevice()?.label;
 
-  if (!place) {
-    elements.locationLine.hidden = true;
-    return;
-  }
-
-  elements.locationLine.textContent = t("checklist.locationLine", { place });
-  elements.locationLine.hidden = false;
-}
-
-function cityFromTimezone(timezone) {
-  if (typeof timezone !== "string" || !timezone.includes("/")) {
-    return null;
-  }
-
-  return timezone.split("/").pop().replace(/_/g, " ");
+  return place
+    ? t("checklist.conditionsHeadlinePlace", { emoji, degrees, place })
+    : t("checklist.conditionsHeadline", { emoji, degrees });
 }
 
 // Rebuilds the checklist rows from generic strings or personalized grouped

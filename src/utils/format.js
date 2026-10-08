@@ -70,3 +70,38 @@ export function formatWeatherCode(code) {
 
   return key ? t(`weatherCode.${key}`) : t("weatherCode.unavailable");
 }
+
+// Emoji for the same Open-Meteo codes above, so the headline condition reads
+// at a glance. Grouped rather than one-per-code: the distinction between
+// drizzle and light rain does not need two different pictures.
+const WEATHER_CODE_EMOJI = {
+  clear: "☀️",
+  mostlyClear: "🌤️",
+  partlyCloudy: "⛅",
+  cloudy: "☁️",
+  fog: "🌫️",
+  lightDrizzle: "🌦️",
+  drizzle: "🌦️",
+  heavyDrizzle: "🌧️",
+  freezingDrizzle: "🌨️",
+  lightRain: "🌦️",
+  rain: "🌧️",
+  heavyRain: "🌧️",
+  freezingRain: "🌨️",
+  lightSnow: "🌨️",
+  snow: "❄️",
+  heavySnow: "❄️",
+  snowGrains: "🌨️",
+  rainShowers: "🌦️",
+  heavyShowers: "🌧️",
+  snowShowers: "🌨️",
+  heavySnowShowers: "❄️",
+  thunderstorm: "⛈️",
+  thunderstormHail: "⛈️"
+};
+
+export function formatWeatherEmoji(code) {
+  const key = WEATHER_CODE_KEYS[code];
+
+  return (key && WEATHER_CODE_EMOJI[key]) || "🌡️";
+}
