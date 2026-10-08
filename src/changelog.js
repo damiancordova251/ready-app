@@ -38,5 +38,10 @@ export const CHANGELOG = [
     version: "collapsible-checklist-install-prompt",
     en: "Your checklist is now compact \u2014 each category shows its best option, with alternatives one tap away. You can also set a city from the main screen, and Ready will show you how to add it to your home screen so reminders work.",
     es: "Tu lista ahora es compacta: cada categor\u00eda muestra su mejor opci\u00f3n y las alternativas est\u00e1n a un toque. Tambi\u00e9n puedes elegir una ciudad desde la pantalla principal, y Ready te mostrar\u00e1 c\u00f3mo agregarlo a tu pantalla de inicio para que funcionen los recordatorios."
+  },
+  {
+    version: "compact-screen-weather-notifications",
+    en: "Everything now fits on one screen \u2014 no scrolling for your checklist. Ready also shows which place the forecast is for, and daily reminders now tell you the weather and the one thing to bring, like \"70% chance of rain \u2014 bring an umbrella\".",
+    es: "Todo cabe ahora en una pantalla, sin desplazarte. Ready tambi\u00e9n muestra de qu\u00e9 lugar es el pron\u00f3stico, y los recordatorios diarios ahora te dicen el clima y lo \u00fanico que debes llevar, como \"70% de probabilidad de lluvia \u2014 lleva un paraguas\"."
   }
 ];

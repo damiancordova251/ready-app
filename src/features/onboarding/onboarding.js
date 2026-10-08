@@ -525,7 +525,7 @@ async function applyOnboardingCity(city) {
   elements.onboardingSecondary.disabled = true;
   elements.onboardingMessage.textContent = t("onboarding.citySelected", { city: city.label });
 
-  const location = { latitude: city.latitude, longitude: city.longitude, accuracy: null };
+  const location = { latitude: city.latitude, longitude: city.longitude, accuracy: null, label: city.name };
 
   try {
     state.latestLocation = toReminderLocation(location);

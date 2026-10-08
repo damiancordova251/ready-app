@@ -64,6 +64,7 @@ export const en = {
     savedLocationFailedStatus: "Saved location could not update the checklist. Tap Use current location to refresh it.",
     locationSaveFailedStatus: "Location could not be saved on this device.",
     prepared: "Prepared for the next {hours} hours.",
+    locationLine: "📍 Weather for {place}",
     checklistWindowSaved: "Checklist window saved for {hours}.",
     checklistWindowSaveFailed: "Checklist window could not be saved.",
     routineStartSaved: "Routine start saved for {time}.",
@@ -148,13 +149,9 @@ export const en = {
     manageable: "The next {hours} hours look manageable."
   },
   install: {
-    iosTitle: "Add Ready to your home screen",
-    iosBody: "Tap the Share button in Safari, then choose \"Add to Home Screen\". Daily reminders only work once Ready is installed.",
-    genericTitle: "Install Ready",
-    genericBody: "Add Ready to your device so it opens like an app and can send you daily reminders.",
-    inAppTitle: "Open Ready in your browser",
-    inAppBody: "You're viewing Ready inside another app. Tap the menu and choose \"Open in browser\" to install it and get reminders.",
-    action: "Install",
+    iosLine: "📲 Tap Share, then \"Add to Home Screen\", to get daily reminders",
+    genericLine: "📲 Install Ready to get daily reminders",
+    inAppLine: "📲 Open in your browser to install and get reminders",
     dismiss: "Not now"
   },
   onboarding: {

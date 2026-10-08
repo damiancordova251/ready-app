@@ -1,7 +1,7 @@
 // Bump APP_VERSION whenever cached app shell or icon assets need to be refreshed
 // for installed PWAs. Also add a matching entry to src/changelog.js each time —
 // that's what the update-available banner's "what's new" line shows.
-const APP_VERSION = "collapsible-checklist-install-prompt";
+const APP_VERSION = "compact-screen-weather-notifications";
 const CACHE_NAME = `ready-${APP_VERSION}`;
 
 // Core assets use network-first caching so pilot deployments are less likely to
@@ -245,8 +245,8 @@ function getPushReminder(event) {
 
 function getDefaultReminder() {
   return {
-    title: "Ready Checklist",
-    body: "Your weather checklist is ready.",
+    title: "\u2705 Your checklist is ready",
+    body: "Open Ready to see what to wear today.",
     tag: "ready-checklist",
     url: "./"
   };

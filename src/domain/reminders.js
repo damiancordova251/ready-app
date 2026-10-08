@@ -1,8 +1,8 @@
 // Centralized notification copy keeps local test notifications, server push
 // payloads, and Settings text consistent.
 export const REMINDER_COPY = {
-  title: "Ready Checklist",
-  body: "Your weather checklist is ready.",
+  title: "✅ Your checklist is ready",
+  body: "Open Ready to see what to wear today.",
   scheduledServer: "The server will send a simple daily reminder at your routine start time."
 };
 
@@ -12,7 +12,7 @@ export function createChecklistReminder({ url = "./" } = {}) {
   return {
     title: REMINDER_COPY.title,
     body: REMINDER_COPY.body,
-    tag: "ready-checklist-test",
+    tag: "ready-checklist",
     url
   };
 }

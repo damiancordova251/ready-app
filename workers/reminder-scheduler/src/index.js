@@ -6,9 +6,9 @@ const DEFAULT_NOTIFICATION_EVENTS_TABLE = "notification_events";
 const DEFAULT_CRON_WINDOW_MINUTES = 5;
 const OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast";
 const FALLBACK_REMINDER = {
-  title: "Ready Checklist",
-  body: "Your weather checklist is ready.",
-  tag: "ready-checklist-test",
+  title: "\u2705 Your checklist is ready",
+  body: "Open Ready to see what to wear today.",
+  tag: "ready-checklist",
   url: "/"
 };
 

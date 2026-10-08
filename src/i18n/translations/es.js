@@ -64,6 +64,7 @@ export const es = {
     savedLocationFailedStatus: "La ubicación guardada no pudo actualizar la lista. Toca \"Usar ubicación actual\" para actualizarla.",
     locationSaveFailedStatus: "La ubicación no se pudo guardar en este dispositivo.",
     prepared: "Preparado para las próximas {hours} horas.",
+    locationLine: "📍 Clima de {place}",
     checklistWindowSaved: "Ventana de la lista guardada para {hours}.",
     checklistWindowSaveFailed: "No se pudo guardar la ventana de la lista.",
     routineStartSaved: "Hora de rutina guardada para las {time}.",
@@ -148,13 +149,9 @@ export const es = {
     manageable: "Las próximas {hours} horas se ven manejables."
   },
   install: {
-    iosTitle: "Agrega Ready a tu pantalla de inicio",
-    iosBody: "Toca el botón Compartir en Safari y elige \"Agregar a inicio\". Los recordatorios diarios solo funcionan con Ready instalado.",
-    genericTitle: "Instalar Ready",
-    genericBody: "Agrega Ready a tu dispositivo para que se abra como una app y pueda enviarte recordatorios diarios.",
-    inAppTitle: "Abre Ready en tu navegador",
-    inAppBody: "Estás viendo Ready dentro de otra aplicación. Toca el menú y elige \"Abrir en el navegador\" para instalarlo y recibir recordatorios.",
-    action: "Instalar",
+    iosLine: "📲 Toca Compartir y luego \"Agregar a inicio\" para recibir recordatorios",
+    genericLine: "📲 Instala Ready para recibir recordatorios diarios",
+    inAppLine: "📲 Ábrelo en tu navegador para instalarlo y recibir recordatorios",
     dismiss: "Ahora no"
   },
   onboarding: {

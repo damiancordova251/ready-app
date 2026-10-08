@@ -82,7 +82,7 @@ async function handleRecommendationRequest() {
 // exactly the same downstream behaviour.
 async function applyChosenCity(city) {
   const requestedAt = new Date();
-  const location = { latitude: city.latitude, longitude: city.longitude, accuracy: null };
+  const location = { latitude: city.latitude, longitude: city.longitude, accuracy: null, label: city.name };
 
   setLoading(t("checklist.loadingLabelWeather"));
 
@@ -179,7 +179,6 @@ function summarizeWeatherConditions(weather) {
 // Updates the main checklist screen after a successful weather fetch.
 function renderRecommendation(weather, timeAwayHours, checklist) {
   elements.appShell.classList.remove("is-error", "is-warning", "is-complete");
-  elements.statusPill.textContent = t("topBar.statusUpdated");
   elements.kicker.textContent = t("checklist.todayKicker");
   elements.recommendationTitle.textContent = t("checklist.title");
   elements.reasonText.textContent = getChecklistPrompt(timeAwayHours);
@@ -189,6 +188,37 @@ function renderRecommendation(weather, timeAwayHours, checklist) {
   renderItems(checklist);
   updateCompletionState();
   renderFacts(weather);
+  renderLocationLine(weather);
+}
+
+// Tells people which place the forecast is for, so they stop re-tapping
+// "Update location" just to check. A typed city keeps its own name; for a GPS
+// fix we read the city out of the forecast's IANA timezone
+// ("America/Guayaquil" -> "Guayaquil"), which costs no extra request and is
+// close enough to be reassuring.
+function renderLocationLine(weather) {
+  if (!elements.locationLine) {
+    return;
+  }
+
+  const saved = getSavedLocationForThisDevice();
+  const place = saved?.label || cityFromTimezone(weather?.timezone);
+
+  if (!place) {
+    elements.locationLine.hidden = true;
+    return;
+  }
+
+  elements.locationLine.textContent = t("checklist.locationLine", { place });
+  elements.locationLine.hidden = false;
+}
+
+function cityFromTimezone(timezone) {
+  if (typeof timezone !== "string" || !timezone.includes("/")) {
+    return null;
+  }
+
+  return timezone.split("/").pop().replace(/_/g, " ");
 }
 
 // Rebuilds the checklist rows from generic strings or personalized grouped
@@ -227,7 +257,6 @@ function renderPersonalizedItems(sections) {
 // location/weather/reminder work is running or has failed.
 export function setLoading(label) {
   elements.appShell.classList.remove("is-error", "is-warning", "is-complete");
-  elements.statusPill.textContent = t("topBar.statusLoading");
   elements.kicker.textContent = label;
   elements.recommendationTitle.textContent = t("checklist.title");
   elements.reasonText.textContent = t("checklist.loadingReason", { hours: getSavedTimeAwayHours() });
@@ -243,7 +272,6 @@ function renderError(error) {
   elements.appShell.classList.toggle("is-warning", copy.kind === "warning");
   elements.appShell.classList.toggle("is-error", copy.kind === "error");
   elements.appShell.classList.remove("is-complete");
-  elements.statusPill.textContent = copy.status;
   elements.kicker.textContent = copy.kicker;
   elements.recommendationTitle.textContent = copy.title;
   elements.reasonText.textContent = copy.reason;
@@ -495,6 +523,7 @@ export function getSavedLocationForThisDevice() {
         latitude: Number(location.latitude),
         longitude: Number(location.longitude),
         accuracy: toAccuracy(location.accuracy),
+        label: typeof location.label === "string" ? location.label : null,
         savedAt: location.savedAt ?? null
       };
     }
@@ -517,6 +546,7 @@ export function saveLocationForThisDevice(location) {
       latitude: Number(location.latitude),
       longitude: Number(location.longitude),
       accuracy: toAccuracy(location.accuracy),
+      label: typeof location.label === "string" ? location.label : null,
       savedAt: new Date().toISOString()
     }));
   } catch (error) {
@@ -528,7 +558,10 @@ export function toReminderLocation(location) {
   return {
     latitude: location.latitude,
     longitude: location.longitude,
-    accuracy: location.accuracy
+    accuracy: location.accuracy,
+    // Carried through so a typed city keeps its name on the way to storage;
+    // a GPS fix has none and falls back to the forecast timezone.
+    label: typeof location.label === "string" ? location.label : null
   };
 }
 

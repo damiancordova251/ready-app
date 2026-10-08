@@ -13,3 +13,6 @@ dist/
 
 # Wrangler local build/cache output.
 .wrangler/
+
+# Personal Claude Code permission preferences (machine-local).
+.claude/settings.local.json

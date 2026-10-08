@@ -59,21 +59,22 @@ function shouldShow() {
   return true;
 }
 
+// Deliberately one quiet line, not a card: the checklist is the point of the
+// screen, and a nag that pushes it below the fold costs more than it gains.
 function show() {
   const copy = getCopyForPlatform();
 
-  elements.installBannerTitle.textContent = copy.title;
-  elements.installBannerBody.textContent = copy.body;
-  elements.installDismissButton.textContent = t("install.dismiss");
+  elements.installActionButton.textContent = copy.line;
 
-  // Only Android/Chrome gets a working button; on iOS a button would imply an
-  // action the browser does not actually offer.
+  // Only Android/Chrome can actually open an install dialog. On iOS the line
+  // states the steps instead, because a button there would promise an action
+  // the browser does not offer.
   if (copy.canPrompt && deferredPrompt) {
-    elements.installActionButton.hidden = false;
-    elements.installActionButton.textContent = t("install.action");
     elements.installActionButton.onclick = runAndroidInstall;
+    elements.installActionButton.disabled = false;
   } else {
-    elements.installActionButton.hidden = true;
+    elements.installActionButton.onclick = null;
+    elements.installActionButton.disabled = true;
   }
 
   elements.installBanner.hidden = false;
@@ -82,29 +83,14 @@ function show() {
 
 function getCopyForPlatform() {
   if (isInAppBrowser()) {
-    return {
-      platform: "in_app_browser",
-      title: t("install.inAppTitle"),
-      body: t("install.inAppBody"),
-      canPrompt: false
-    };
+    return { platform: "in_app_browser", line: t("install.inAppLine"), canPrompt: false };
   }
 
   if (isLikelyIos()) {
-    return {
-      platform: "ios",
-      title: t("install.iosTitle"),
-      body: t("install.iosBody"),
-      canPrompt: false
-    };
+    return { platform: "ios", line: t("install.iosLine"), canPrompt: false };
   }
 
-  return {
-    platform: "other",
-    title: t("install.genericTitle"),
-    body: t("install.genericBody"),
-    canPrompt: true
-  };
+  return { platform: "other", line: t("install.genericLine"), canPrompt: true };
 }
 
 async function runAndroidInstall() {

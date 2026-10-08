@@ -2,13 +2,13 @@
 // feature module can update the page without repeatedly querying the document.
 export const elements = {
   appShell: document.querySelector(".app-shell"),
-  statusPill: document.querySelector("#statusPill"),
   screenTrack: document.querySelector("#screenTrack"),
   checklistTab: document.querySelector("#checklistTab"),
   weatherTab: document.querySelector("#weatherTab"),
   checklistScreen: document.querySelector("#checklistScreen"),
   weatherScreen: document.querySelector("#weatherScreen"),
   kicker: document.querySelector("#kicker"),
+  locationLine: document.querySelector("#locationLine"),
   recommendationTitle: document.querySelector("#recommendationTitle"),
   reasonText: document.querySelector("#reasonText"),
   itemList: document.querySelector("#itemList"),
@@ -51,8 +51,6 @@ export const elements = {
   onboardingPrimary: document.querySelector("#onboardingPrimary"),
   onboardingSecondary: document.querySelector("#onboardingSecondary"),
   installBanner: document.querySelector("#installBanner"),
-  installBannerTitle: document.querySelector("#installBannerTitle"),
-  installBannerBody: document.querySelector("#installBannerBody"),
   installActionButton: document.querySelector("#installActionButton"),
   installDismissButton: document.querySelector("#installDismissButton"),
   updateBanner: document.querySelector("#updateBanner"),
