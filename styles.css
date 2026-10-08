@@ -116,15 +116,15 @@ views while hiding the native scrollbar. */
 /* Small and inline beside the title. It used to be a 70px block with 22px of
 margin, which cost most of a phone screen before a single checklist row. */
 .app-icon {
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   flex: 0 0 auto;
   display: block;
 }
 
 .kicker {
   color: var(--accent);
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   font-weight: 800;
   letter-spacing: 0;
   text-transform: uppercase;
@@ -142,18 +142,35 @@ margin, which cost most of a phone screen before a single checklist row. */
   min-width: 0;
 }
 
+/* Three size buckets, chosen in JS from the headline's length: a long place
+name shrinks to fit rather than wrapping and pushing the checklist below the
+fold. Sizes overlap deliberately so the step between them is not jarring. */
 .recommendation-title {
   min-height: 0;
   margin: 2px 0 0;
   color: var(--text);
-  font-size: clamp(1.45rem, 6.6vw, 1.95rem);
   line-height: 1.15;
   letter-spacing: 0;
   text-align: left;
-  /* A long city name must not wrap to a second line and push the checklist
-  below the fold — shrink the name rather than grow the header. */
-  overflow-wrap: break-word;
-  hyphens: auto;
+  font-size: clamp(1.45rem, 6.6vw, 1.95rem);
+  /* Never wrap. The buckets above shrink most names to fit; a genuinely
+  extreme one ellipsizes instead of shrinking into illegibility. The
+  temperature leads, so it is always the part that survives. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recommendation-title[data-size="lg"] {
+  font-size: clamp(1.55rem, 7.2vw, 2rem);
+}
+
+.recommendation-title[data-size="md"] {
+  font-size: clamp(1.3rem, 5.9vw, 1.65rem);
+}
+
+.recommendation-title[data-size="sm"] {
+  font-size: clamp(1.05rem, 4.8vw, 1.35rem);
 }
 
 .completion-mark {
@@ -195,9 +212,9 @@ checkmark box beside each item. */
 .item-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   min-height: 0;
-  margin: 0 0 10px;
+  margin: 0 0 9px;
   padding: 0;
   list-style: none;
 }
@@ -283,12 +300,12 @@ checkmark box beside each item. */
   min-height: 0;
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 9px;
+  padding: 8px;
   background: rgba(245, 247, 251, 0.72);
 }
 
 .checklist-section-title {
-  margin: 0 0 7px;
+  margin: 0 0 5px;
   color: var(--muted);
   font-size: 0.86rem;
   font-weight: 900;
@@ -302,14 +319,14 @@ checkmark box beside each item. */
 }
 
 .checklist-section .checklist-row {
-  min-height: 44px;
-  padding: 8px 11px;
+  min-height: 42px;
+  padding: 7px 11px;
 }
 
 /* Alternatives for a category sit behind a disclosure so the checklist fits on
 one screen: category + best option visible, the rest one tap away. */
 .checklist-more {
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
 .checklist-more-summary {
@@ -347,7 +364,7 @@ one screen: category + best option visible, the rest one tap away. */
 }
 
 .checklist-more .checklist-section-items {
-  margin-top: 6px;
+  margin-top: 5px;
 }
 
 .empty-checklist {

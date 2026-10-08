@@ -181,8 +181,8 @@ function summarizeWeatherConditions(weather) {
 // Updates the main checklist screen after a successful weather fetch.
 function renderRecommendation(weather, timeAwayHours, checklist) {
   elements.appShell.classList.remove("is-error", "is-warning", "is-complete");
-  elements.kicker.textContent = t("checklist.todayKicker");
-  elements.recommendationTitle.textContent = buildConditionsHeadline(weather);
+  elements.kicker.textContent = `${formatWeatherEmoji(weather?.current?.weatherCode)} ${t("checklist.todayKicker")}`;
+  setHeadline(buildConditionsHeadline(weather));
   elements.reasonText.textContent = getChecklistPrompt(timeAwayHours);
   elements.primaryAction.disabled = false;
   elements.primaryAction.textContent = t("checklist.primaryActionUpdateLocation");
@@ -218,7 +218,7 @@ async function resolvePlaceNameIfMissing(weather) {
 
     // Only the headline depends on the name, so re-render that rather than
     // regenerating the whole checklist.
-    elements.recommendationTitle.textContent = buildConditionsHeadline(weather);
+    setHeadline(buildConditionsHeadline(weather));
   } finally {
     state.placeNameLookupInFlight = false;
   }
@@ -234,7 +234,6 @@ async function resolvePlaceNameIfMissing(weather) {
 // York" while the forecast underneath was correctly theirs.
 function buildConditionsHeadline(weather) {
   const temperature = weather?.current?.temperature;
-  const emoji = formatWeatherEmoji(weather?.current?.weatherCode);
 
   if (!Number.isFinite(temperature)) {
     return t("checklist.title");
@@ -244,8 +243,19 @@ function buildConditionsHeadline(weather) {
   const place = getSavedLocationForThisDevice()?.label;
 
   return place
-    ? t("checklist.conditionsHeadlinePlace", { emoji, degrees, place })
-    : t("checklist.conditionsHeadline", { emoji, degrees });
+    ? t("checklist.conditionsHeadlinePlace", { degrees, place })
+    : t("checklist.conditionsHeadline", { degrees });
+}
+
+// Long place names ("Santo Domingo de los Colorados") would wrap onto a
+// second line and push the checklist below the fold, so the type shrinks to
+// fit rather than the header growing. Bucketed in JS because CSS alone cannot
+// size on content length.
+function setHeadline(text) {
+  elements.recommendationTitle.textContent = text;
+  elements.recommendationTitle.dataset.size = text.length > 22
+    ? "sm"
+    : text.length > 15 ? "md" : "lg";
 }
 
 // Rebuilds the checklist rows from generic strings or personalized grouped
@@ -285,7 +295,7 @@ function renderPersonalizedItems(sections) {
 export function setLoading(label) {
   elements.appShell.classList.remove("is-error", "is-warning", "is-complete");
   elements.kicker.textContent = label;
-  elements.recommendationTitle.textContent = t("checklist.title");
+  setHeadline(t("checklist.title"));
   elements.reasonText.textContent = t("checklist.loadingReason", { hours: getSavedTimeAwayHours() });
   elements.primaryAction.disabled = true;
   elements.primaryAction.textContent = t("checklist.primaryActionChecking");
@@ -300,7 +310,7 @@ function renderError(error) {
   elements.appShell.classList.toggle("is-error", copy.kind === "error");
   elements.appShell.classList.remove("is-complete");
   elements.kicker.textContent = copy.kicker;
-  elements.recommendationTitle.textContent = copy.title;
+  setHeadline(copy.title);
   elements.reasonText.textContent = copy.reason;
   elements.primaryAction.disabled = false;
   elements.primaryAction.textContent = t("checklist.primaryActionTryAgain");

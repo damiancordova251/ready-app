@@ -53,5 +53,10 @@ export const CHANGELOG = [
     version: "place-name-lookup",
     en: "Ready now names the town your forecast is for, so you can tell at a glance which location it is using.",
     es: "Ready ahora muestra la localidad a la que corresponde tu pron\u00f3stico, para que sepas de un vistazo qu\u00e9 ubicaci\u00f3n est\u00e1 usando."
+  },
+  {
+    version: "headline-fit",
+    en: "Tidier top of screen: the weather icon now sits beside the date, and long place names shrink to fit on one line.",
+    es: "Parte superior m\u00e1s ordenada: el icono del clima ahora va junto a la fecha, y los nombres largos de lugares se ajustan a una sola l\u00ednea."
   }
 ];
