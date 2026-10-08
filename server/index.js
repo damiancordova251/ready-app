@@ -11,6 +11,12 @@ import {
 } from "./pushService.js";
 import { startReminderScheduler } from "./scheduler.js";
 import {
+  buildDeviceCookie,
+  buildExpiredDeviceCookie,
+  readDeviceIdCookie,
+  resolveDeviceIdentity
+} from "./deviceCookie.js";
+import {
   getAllSubscriptions,
   getSubscription,
   isSubscriptionStoreConfigured,
@@ -245,8 +251,24 @@ app.post("/api/analytics/events", async (req, res) => {
     return;
   }
 
+  // Recovers the device behind this installation id when localStorage was
+  // cleared since the last visit, so one person who gets wiped repeatedly stays
+  // one device in the numbers instead of becoming several.
+  const identity = resolveDeviceIdentity({
+    installationId: parsed.value.installationId,
+    cookieDeviceId: readDeviceIdCookie(req.headers.cookie)
+  });
+
+  if (identity.setCookie) {
+    const cookie = buildDeviceCookie(identity.deviceId, { secure: req.secure });
+
+    if (cookie) {
+      res.setHeader("Set-Cookie", cookie);
+    }
+  }
+
   try {
-    await recordAnalyticsEvent(parsed.value);
+    await recordAnalyticsEvent({ ...parsed.value, deviceId: identity.deviceId });
     res.status(204).send();
   } catch (error) {
     console.error("Analytics event logging failed.", error);
@@ -479,6 +501,11 @@ app.delete("/api/installations/:id", async (req, res) => {
 
   try {
     const deleted = await deleteInstallationData(req.params.id);
+
+    // The device cookie is HttpOnly, so the client cannot clear it itself. If
+    // it survived a delete it would silently re-link the next visit to the
+    // identity the person just asked us to erase.
+    res.setHeader("Set-Cookie", buildExpiredDeviceCookie({ secure: req.secure }));
     res.status(200).json({ ok: true, deleted });
   } catch (error) {
     console.error("Data deletion failed.", error);

@@ -8,24 +8,36 @@ people are actually coming back. For copy-paste SQL, see
 
 ## Where your users are
 
-**`app_installations` is your user table.** One row = one install of Ready on one browser. To get
-your user count:
+**Start with `v_headline_metrics`, not `app_installations`:**
 
 ```sql
-select count(*) from app_installations;
+select * from public.v_headline_metrics;
 ```
 
-That's it. There is no separate "users" table, because Ready has no accounts — which is the point,
-but it means the install is the closest thing to a person you have.
+There is no "users" table, because Ready has no accounts — which is the point, but it means you have
+to be careful about what you're counting.
 
-### What a row actually represents
+### What a row in `app_installations` actually represents
 
-An installation, not a human. Specifically:
+Despite the name, **not an install, and not a person** — one *browser storage context*. A new row
+appears whenever local storage comes up empty:
 
 - One person with a phone **and** a laptop = **two rows**.
 - One person who clears their browser data and returns = **two rows**.
 - One person who uses "Delete my data" and comes back = **two rows** (the first is gone).
 - Someone who opens the link once, glances, and leaves = **one row**, same as your most devoted user.
+- A link opened **inside another app** (Messages, Instagram) = its own row, separate from Safari's.
+- An automated test run with a fresh browser profile = **one row per run**.
+- **On iOS, the same person coming back after ~7 days away** = a new row, because Safari deletes all
+  script-writable storage after about a week without a visit. Installed PWAs are exempt; tabs are not.
+
+That last one is why the count climbs on its own. Since migration `0009` the backend sets a
+first-party `HttpOnly` cookie that survives the sweep and re-links the returning visit, and
+`v_headline_metrics.devices` collapses the rows accordingly — but only for visits *after* that
+migration was applied. Older rows stay as they are.
+
+**The number worth quoting is `engaged_devices`** (more than one event) or `reachable_by_push`
+(can actually receive a reminder). `storage_contexts` is the inflated one.
 
 So treat the raw count as *"devices that have opened Ready at least once"* and use the activity
 columns below to find the people who actually stuck around.
@@ -81,7 +93,7 @@ their records if someone emails asking for a data export or deletion.
 
 | Table | What it holds | Written when |
 | --- | --- | --- |
-| `app_installations` | One row per install — your user list | First event from a new device |
+| `app_installations` | One row per browser storage context — **not** per person. Use `v_headline_metrics` instead | First event from a new device, or from one whose storage was cleared |
 | `analytics_events` | The main activity stream: app opened, checklist generated, reminder toggled, link shared, feedback given | Every tracked action |
 | `pilot_events` | The *older* activity stream, same idea, fewer event types | Still writing, kept for continuity |
 | `recommendation_events` | The weather conditions and the checklist produced from them | Every checklist generated |

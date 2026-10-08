@@ -84,7 +84,7 @@ export function buildInstallationContext(deviceContext) {
 // Records one analytics event and keeps app_installations current via upsert —
 // last_active_at, language, and the device context above — a dimension-table
 // touch alongside every event, not a separate write path the client manages.
-export async function recordAnalyticsEvent({ installationId, eventName, category, language, metadata, occurredAt, deviceContext }) {
+export async function recordAnalyticsEvent({ installationId, eventName, category, language, metadata, occurredAt, deviceContext, deviceId }) {
   const client = getClient();
 
   const { error: upsertError } = await client
@@ -93,6 +93,10 @@ export async function recordAnalyticsEvent({ installationId, eventName, category
       id: installationId,
       last_active_at: new Date().toISOString(),
       ...(language ? { preferred_language: language } : {}),
+      // Ties this row to the device it belongs to when the caller could recover
+      // one from the cookie; omitted (not nulled) otherwise, so merge-duplicates
+      // leaves an already-known device_id alone.
+      ...(deviceId ? { device_id: deviceId } : {}),
       ...buildInstallationContext(deviceContext)
     }, { onConflict: "id" });
 

@@ -433,7 +433,7 @@ function sanitizeDeviceContext(context) {
   };
 }
 
-export async function recordAnalyticsEvent({ installationId, eventName, category, language, metadata, occurredAt, deviceContext }, env) {
+export async function recordAnalyticsEvent({ installationId, eventName, category, language, metadata, occurredAt, deviceContext, deviceId }, env) {
   await supabaseFetch(env, {
     path: appInstallationsTablePath(env),
     searchParams: new URLSearchParams({ on_conflict: "id" }),
@@ -447,6 +447,9 @@ export async function recordAnalyticsEvent({ installationId, eventName, category
         id: installationId,
         last_active_at: new Date().toISOString(),
         ...(language ? { preferred_language: language } : {}),
+        // Omitted rather than nulled when unknown: merge-duplicates would
+        // otherwise erase a device_id this row already has.
+        ...(deviceId ? { device_id: deviceId } : {}),
         ...buildInstallationContext(deviceContext)
       })
     }

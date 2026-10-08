@@ -2,6 +2,41 @@
 
 Ready-to-run in the Supabase SQL Editor once the migrations in `supabase/migrations/` are applied.
 
+## Start here: the headline numbers
+
+```sql
+select * from public.v_headline_metrics;
+```
+
+**Do not quote `storage_contexts`.** A row in `app_installations` is one browser
+*storage context*, not a person and not an install. A new row appears every time
+local storage comes up empty: a private tab, a link opened inside another app's
+in-app browser, an automated test run, and — the common one on iOS — Safari
+deleting all script-writable storage after about seven days without a visit.
+
+Read the columns in order of how much they mean:
+
+| Column | What it actually is |
+| --- | --- |
+| `storage_contexts` | Raw row count. Inflated. Useful only as a denominator. |
+| `devices` | Storage contexts collapsed by `device_id`. |
+| `engaged_devices` | Devices with **more than one event**. A lone `session_started` is a bounce or a bot. |
+| `returned_another_day` | Devices active on two or more distinct days. The real retention signal. |
+| `installed_pwa` | Added to the home screen. Exempt from Safari's storage sweep. |
+| `reachable_by_push` | Has a push subscription — the only devices that can receive a morning reminder. |
+| `devices_with_wiped_storage` | Devices seen under more than one installation ID, i.e. caught being wiped and recovered. |
+
+Per-device detail behind that row:
+
+```sql
+select * from public.v_device_engagement
+order by event_count desc;
+```
+
+> `device_id` is only recoverable for visits **after** migration `0009` was
+> applied; earlier rows are each treated as their own device, so historical
+> counts stay inflated and only new traffic gets collapsed.
+
 ## Daily / weekly / monthly active installations
 
 ```sql
@@ -24,10 +59,14 @@ where activity_date >= current_date - interval '29 days';
 ## Retention (D1 / D3 / D7 / D14 / D30)
 
 ```sql
--- Retention for the cohort that first opened the app on a given date.
--- Call once per day_n you care about (1, 3, 7, 14, 30).
+-- Preferred: counts devices, and excludes single-event bounces from the
+-- cohort, so the denominator is people who actually arrived.
+select * from public.get_device_retention('2026-07-01'::date, 1);
+select * from public.get_device_retention('2026-07-01'::date, 7);
+
+-- The original, kept for comparison: counts storage contexts and includes
+-- every one-second bounce in the cohort, so it reads lower than reality.
 select * from public.get_retention('2026-07-01'::date, 1);
-select * from public.get_retention('2026-07-01'::date, 7);
 ```
 
 ## Session frequency / recommendation frequency

@@ -58,5 +58,10 @@ export const CHANGELOG = [
     version: "headline-fit",
     en: "Tidier top of screen: the weather icon now sits beside the date, and long place names shrink to fit on one line.",
     es: "Parte superior m\u00e1s ordenada: el icono del clima ahora va junto a la fecha, y los nombres largos de lugares se ajustan a una sola l\u00ednea."
+  },
+  {
+    version: "device-identity",
+    en: "Ready now remembers your device even if your browser clears its storage, so returning doesn't look like a brand-new visit. This uses one private cookie holding the same anonymous ID as before \u2014 no new personal information, and the updated Privacy Policy in Settings explains it.",
+    es: "Ready ahora recuerda tu dispositivo aunque el navegador borre su almacenamiento, para que volver no parezca una visita nueva. Usa una sola cookie privada con el mismo ID an\u00f3nimo de antes \u2014 ninguna informaci\u00f3n personal nueva, y la Pol\u00edtica de Privacidad actualizada en Configuraci\u00f3n lo explica."
   }
 ];
