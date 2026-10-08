@@ -181,7 +181,7 @@ function summarizeWeatherConditions(weather) {
 // Updates the main checklist screen after a successful weather fetch.
 function renderRecommendation(weather, timeAwayHours, checklist) {
   elements.appShell.classList.remove("is-error", "is-warning", "is-complete");
-  elements.kicker.textContent = `${formatWeatherEmoji(weather?.current?.weatherCode)} ${t("checklist.todayKicker")}`;
+  elements.kicker.textContent = `${t("checklist.todayKicker")} ${formatWeatherEmoji(weather?.current?.weatherCode)}`;
   setHeadline(buildConditionsHeadline(weather));
   elements.reasonText.textContent = getChecklistPrompt(timeAwayHours);
   elements.primaryAction.disabled = false;
