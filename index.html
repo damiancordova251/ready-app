@@ -54,6 +54,7 @@
           <p class="reason" id="reasonText">Prepared for your time away.</p>
           <ul class="item-list" id="itemList" aria-label="Checklist items"></ul>
           <button class="primary-action" id="primaryAction" type="button">Use current location</button>
+          <button class="link-action" id="useCityButton" type="button" data-i18n="onboarding.locationUseCity">Enter a city instead</button>
           <details class="settings-panel">
             <summary data-i18n="settings.summary">Settings</summary>
             <label class="routine-start-setting" for="timeAwayInput">
@@ -78,7 +79,7 @@
                 <span data-i18n="settings.notificationsTitle">Checklist reminders</span>
                 <p id="notificationStatus">Enable reminders to save this PWA for server push notifications.</p>
                 <p id="notificationRoutineNote">Scheduled reminders will use your 6:00 AM routine start.</p>
-                <p data-i18n="settings.notificationsPrivacyNote">Ready shares your approximate area (not your exact location) with the server so reminders can mention rain, cold, or heat. Basic anonymous usage events may be recorded during the pilot.</p>
+                <p data-i18n="settings.notificationsPrivacyNote">To send reminders, Ready stores your approximate area (rounded to about 11 km), your reminder time, and your timezone. Your exact location is never stored on our servers.</p>
               </div>
               <div class="notification-actions">
                 <button class="secondary-action" id="enableNotificationsButton" type="button">Enable reminders</button>
@@ -162,6 +163,19 @@
       <footer class="footer-note">
         <p id="appStatus" data-i18n="checklist.tapLocationOnceStatus">Tap Use current location once. Location can be stored on this device for faster starts.</p>
       </footer>
+
+      <!-- Add-to-home-screen prompt. Hidden unless the app is running in a
+      browser tab, since push reminders require an installed PWA on iOS. -->
+      <div class="install-banner" id="installBanner" hidden>
+        <div class="install-banner-copy">
+          <strong id="installBannerTitle"></strong>
+          <p id="installBannerBody"></p>
+        </div>
+        <div class="install-banner-actions">
+          <button class="secondary-action" id="installDismissButton" type="button"></button>
+          <button class="primary-action" id="installActionButton" type="button" hidden></button>
+        </div>
+      </div>
 
       <!-- Service worker update prompt shown when a new app version is available. -->
       <div class="update-banner" id="updateBanner" hidden>

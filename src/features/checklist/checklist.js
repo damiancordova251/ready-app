@@ -16,6 +16,7 @@ import { getSavedGroupedChecklist } from "../../domain/personalizedChecklist.js"
 import { getChecklistPrompt, getSavedTimeAwayHours } from "../settings/timeAway.js";
 import { renderNotificationSetting } from "../notifications/notificationSettings.js";
 import { renderFacts, resetFacts } from "../weatherScreen/weatherScreen.js";
+import { openCityPicker } from "../location/cityPicker.js";
 
 // Wires the main checklist screen's own controls. Other features (onboarding,
 // time-away commit) call the exported render/location helpers directly rather
@@ -23,6 +24,7 @@ import { renderFacts, resetFacts } from "../weatherScreen/weatherScreen.js";
 // dependency on onboarding or settings internals.
 export function initChecklist() {
   elements.primaryAction.addEventListener("click", handleRecommendationRequest);
+  elements.useCityButton?.addEventListener("click", () => openCityPicker(applyChosenCity));
   elements.itemList.addEventListener("change", updateCompletionState);
   elements.primaryAction.textContent = t("checklist.primaryActionUseLocation");
 }
@@ -71,6 +73,29 @@ async function handleRecommendationRequest() {
     renderWindowRecommendation(weather, requestedAt, { source: "current_location" });
   } catch (error) {
     trackEvent("client_error", { errorType: "checklist_request_failed", message: error?.message });
+    renderError(error);
+  }
+}
+
+// Applies a city chosen from the picker. Deliberately mirrors
+// handleRecommendationRequest's path so a typed city and a GPS fix produce
+// exactly the same downstream behaviour.
+async function applyChosenCity(city) {
+  const requestedAt = new Date();
+  const location = { latitude: city.latitude, longitude: city.longitude, accuracy: null };
+
+  setLoading(t("checklist.loadingLabelWeather"));
+
+  try {
+    state.latestLocation = toReminderLocation(location);
+    saveLocationForThisDevice(state.latestLocation);
+    renderNotificationSetting();
+    trackPilotEvent("location_updated", { source: "city" });
+
+    const weather = await fetchTodayWeather(location);
+    renderWindowRecommendation(weather, requestedAt, { source: "city" });
+  } catch (error) {
+    trackEvent("client_error", { errorType: "city_checklist_failed", message: error?.message });
     renderError(error);
   }
 }
@@ -242,20 +267,53 @@ function createChecklistItem(item) {
   return listItem;
 }
 
+// Shows the category plus its single best option, with any alternatives behind
+// a disclosure. Keeps the whole checklist on one screen instead of making
+// people scroll past every option in every category to reach accessories.
 function createChecklistSection(section) {
   const listItem = document.createElement("li");
   const heading = document.createElement("h2");
   const rows = document.createElement("div");
+  const items = Array.isArray(section.items) ? section.items : [];
+  const [topItem, ...alternatives] = items;
 
   listItem.className = "checklist-section";
   listItem.dataset.checklistSection = "true";
   heading.className = "checklist-section-title";
   heading.textContent = `${translateDomainString(section.category)} (${translateDomainString(section.label)})`;
   rows.className = "checklist-section-items";
-  rows.replaceChildren(...section.items.map(createChecklistRow));
+
+  if (topItem) {
+    rows.append(createChecklistRow(topItem));
+  }
+
   listItem.append(heading, rows);
 
+  if (alternatives.length > 0) {
+    listItem.append(createChecklistAlternatives(alternatives));
+  }
+
   return listItem;
+}
+
+// A native <details> rather than a custom toggle: it is keyboard accessible
+// and screen-reader friendly for free, and the hidden rows stay in the DOM so
+// checking any one of them still completes the category.
+function createChecklistAlternatives(items) {
+  const details = document.createElement("details");
+  const summary = document.createElement("summary");
+  const rows = document.createElement("div");
+
+  details.className = "checklist-more";
+  summary.className = "checklist-more-summary";
+  summary.textContent = items.length === 1
+    ? t("checklist.moreOptionSingular", { n: items.length })
+    : t("checklist.moreOptionPlural", { n: items.length });
+  rows.className = "checklist-section-items";
+  rows.replaceChildren(...items.map(createChecklistRow));
+  details.append(summary, rows);
+
+  return details;
 }
 
 function createChecklistRow(item) {

@@ -29,6 +29,7 @@ import { initClothingPreferencesUI } from "./features/clothingPreferences/clothi
 import { initChecklist } from "./features/checklist/checklist.js";
 import { initWeatherScreen } from "./features/weatherScreen/weatherScreen.js";
 import { initPwaClient } from "./features/pwa/serviceWorkerClient.js";
+import { initInstallPrompt } from "./features/pwa/installPrompt.js";
 import { initOnboarding } from "./features/onboarding/onboarding.js";
 import { initShareFab } from "./features/share/shareFab.js";
 import { recordReferralVisitIfNeeded } from "./services/referralApi.js";
@@ -64,6 +65,7 @@ initLanguageSetting();
 initFeedbackPrompt();
 initReportIssue();
 initPrivacyControls();
+initInstallPrompt();
 
 trackPilotEvent("app_opened", { standalone: isStandalonePwa() });
 trackEvent("session_started", { standalone: isStandalonePwa() });

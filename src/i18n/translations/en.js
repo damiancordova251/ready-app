@@ -70,6 +70,8 @@ export const en = {
     routineStartSaveFailed: "Start time could not be saved.",
     hourSingular: "{n} hour",
     hourPlural: "{n} hours",
+    moreOptionSingular: "{n} more option",
+    moreOptionPlural: "{n} more options",
     categoryTop: "Top",
     categoryBottom: "Bottom",
     errorLocationOffTitle: "Turn on location",
@@ -144,6 +146,16 @@ export const en = {
     mayFeelCool: "It may feel as cool as {temp}.",
     windMayReach: "Wind may reach {mph} mph.",
     manageable: "The next {hours} hours look manageable."
+  },
+  install: {
+    iosTitle: "Add Ready to your home screen",
+    iosBody: "Tap the Share button in Safari, then choose \"Add to Home Screen\". Daily reminders only work once Ready is installed.",
+    genericTitle: "Install Ready",
+    genericBody: "Add Ready to your device so it opens like an app and can send you daily reminders.",
+    inAppTitle: "Open Ready in your browser",
+    inAppBody: "You're viewing Ready inside another app. Tap the menu and choose \"Open in browser\" to install it and get reminders.",
+    action: "Install",
+    dismiss: "Not now"
   },
   onboarding: {
     welcomeProgress: "Step 1 of 8",

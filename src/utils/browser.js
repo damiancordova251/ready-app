@@ -5,6 +5,14 @@ export function isStandalonePwa() {
     || window.navigator.standalone === true;
 }
 
+// iPhone notification support depends on the app being opened from the Home
+// Screen, so several features branch on this. iPadOS reports itself as a Mac,
+// hence the touch-point check.
+export function isLikelyIos() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
 export function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }

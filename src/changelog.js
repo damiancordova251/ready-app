@@ -33,5 +33,10 @@ export const CHANGELOG = [
     version: "city-location-fallback",
     en: "If your device can't share a location \u2014 which often happens when Ready is opened inside another app \u2014 you can now type in a city instead of being stuck on the setup screen.",
     es: "Si tu dispositivo no puede compartir la ubicaci\u00f3n \u2014 algo com\u00fan cuando Ready se abre dentro de otra aplicaci\u00f3n \u2014 ahora puedes escribir una ciudad en lugar de quedarte atascado en la pantalla de configuraci\u00f3n."
+  },
+  {
+    version: "collapsible-checklist-install-prompt",
+    en: "Your checklist is now compact \u2014 each category shows its best option, with alternatives one tap away. You can also set a city from the main screen, and Ready will show you how to add it to your home screen so reminders work.",
+    es: "Tu lista ahora es compacta: cada categor\u00eda muestra su mejor opci\u00f3n y las alternativas est\u00e1n a un toque. Tambi\u00e9n puedes elegir una ciudad desde la pantalla principal, y Ready te mostrar\u00e1 c\u00f3mo agregarlo a tu pantalla de inicio para que funcionen los recordatorios."
   }
 ];

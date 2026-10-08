@@ -1,6 +1,6 @@
 import { APP_CONFIG } from "../config.js";
 import { INSTALLATION_ID_STORAGE_KEY, PUSH_SUBSCRIPTION_ID_STORAGE_KEY } from "../constants/storageKeys.js";
-import { isStandalonePwa } from "../utils/browser.js";
+import { isLikelyIos, isStandalonePwa } from "../utils/browser.js";
 
 const APP_ICON_URL = "./icons/app-icon-192.png";
 
@@ -266,11 +266,4 @@ function urlBase64ToUint8Array(base64String) {
   }
 
   return outputArray;
-}
-
-// iPhone notification support depends on the app being opened from the Home
-// Screen, so these helpers guide the Settings copy.
-function isLikelyIos() {
-  return /iPad|iPhone|iPod/.test(navigator.userAgent)
-    || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 }

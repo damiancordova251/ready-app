@@ -5,7 +5,8 @@ import {
   validateClothingPreferences
 } from "./clothingPreferences.js";
 
-const CATEGORY_ORDER = ["shirts", "pants", "outerwear", "footwear", "accessories"];
+// Order shown on the checklist: tops, bottoms, shoes, layers, extras.
+const CATEGORY_ORDER = ["shirts", "pants", "footwear", "outerwear", "accessories"];
 const CATEGORY_LABELS = {
   footwear: "Footwear",
   pants: "Pants",

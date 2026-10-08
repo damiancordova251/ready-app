@@ -70,6 +70,8 @@ export const es = {
     routineStartSaveFailed: "No se pudo guardar la hora de inicio.",
     hourSingular: "{n} hora",
     hourPlural: "{n} horas",
+    moreOptionSingular: "{n} opción más",
+    moreOptionPlural: "{n} opciones más",
     categoryTop: "Parte superior",
     categoryBottom: "Parte inferior",
     errorLocationOffTitle: "Activa la ubicación",
@@ -144,6 +146,16 @@ export const es = {
     mayFeelCool: "Puede sentirse tan fresco como {temp}.",
     windMayReach: "El viento puede alcanzar {mph} mph.",
     manageable: "Las próximas {hours} horas se ven manejables."
+  },
+  install: {
+    iosTitle: "Agrega Ready a tu pantalla de inicio",
+    iosBody: "Toca el botón Compartir en Safari y elige \"Agregar a inicio\". Los recordatorios diarios solo funcionan con Ready instalado.",
+    genericTitle: "Instalar Ready",
+    genericBody: "Agrega Ready a tu dispositivo para que se abra como una app y pueda enviarte recordatorios diarios.",
+    inAppTitle: "Abre Ready en tu navegador",
+    inAppBody: "Estás viendo Ready dentro de otra aplicación. Toca el menú y elige \"Abrir en el navegador\" para instalarlo y recibir recordatorios.",
+    action: "Instalar",
+    dismiss: "Ahora no"
   },
   onboarding: {
     welcomeProgress: "Paso 1 de 8",
