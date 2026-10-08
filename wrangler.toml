@@ -1,3 +1,5 @@
-name = "ready-pages"
+# Must match the Cloudflare Pages project name exactly, or `wrangler pages`
+# commands target a project that does not exist.
+name = "ready-app"
 compatibility_date = "2024-11-01"
 pages_build_output_dir = "dist"
