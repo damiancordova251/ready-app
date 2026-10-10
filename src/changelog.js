@@ -63,5 +63,10 @@ export const CHANGELOG = [
     version: "device-identity",
     en: "Ready now remembers your device even if your browser clears its storage, so returning doesn't look like a brand-new visit. This uses one private cookie holding the same anonymous ID as before \u2014 no new personal information, and the updated Privacy Policy in Settings explains it.",
     es: "Ready ahora recuerda tu dispositivo aunque el navegador borre su almacenamiento, para que volver no parezca una visita nueva. Usa una sola cookie privada con el mismo ID an\u00f3nimo de antes \u2014 ninguna informaci\u00f3n personal nueva, y la Pol\u00edtica de Privacidad actualizada en Configuraci\u00f3n lo explica."
+  },
+  {
+    version: "warmer-recommendations",
+    en: "Better checklists: no more sunglasses on grey days, wind and cloud now count toward warmer clothing, and when two options are equally good Ready suggests the warmer one. Your test notification also now shows exactly what a real morning reminder will say.",
+    es: "Mejores listas: se acabaron las gafas de sol en días grises, el viento y las nubes ahora cuentan a favor de ropa más abrigada, y cuando dos opciones son igual de buenas Ready sugiere la más abrigada. Tu notificación de prueba ahora muestra exactamente lo que dirá un recordatorio real."
   }
 ];

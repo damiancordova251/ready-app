@@ -18,7 +18,7 @@
 //
 // Pure and dependency-free (no Node built-ins, no network) so this exact file
 // is duplicated into functions/_shared/, matching the convention already used
-// by server/notificationCopy.js.
+// by src/domain/notificationCopy.js.
 
 export const DEVICE_COOKIE_NAME = "ready_did";
 

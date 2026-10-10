@@ -4,6 +4,7 @@ import { formatTimeLabel } from "../../utils/format.js";
 import { getLocale, t } from "../../i18n/i18n.js";
 import { getSavedRoutineStartTime } from "../settings/routineStart.js";
 import { createChecklistReminder } from "../../domain/reminders.js";
+import { buildNotificationCopy } from "../../domain/notificationCopy.js";
 import { trackPilotEvent } from "../../services/pilotAnalytics.js";
 import { trackEvent } from "../../services/analytics.js";
 import {
@@ -108,18 +109,40 @@ async function handleTestNotification() {
   elements.testNotificationButton.disabled = true;
 
   try {
-    // domain/reminders.js is shared with the Node backend (server/pushService.js),
-    // so it can't import the browser-only i18n module itself; the client-only
-    // local test notification is translated here instead, after the fact.
+    // Uses the same copy builder the real scheduled reminder uses, so a test
+    // shows exactly what a real morning reminder will say. It previously had
+    // its own fixed "Ready Checklist" wording, which meant the test told you
+    // nothing about the message you would actually receive.
+    const copy = buildNotificationCopy({
+      language: getLocale(),
+      weatherSummary: buildTestWeatherSummary(state.latestWeather)
+    });
+
     await sendTestNotification({
       ...createChecklistReminder(),
-      title: t("notifications.testTitle"),
-      body: t("notifications.testBody")
+      title: copy.title,
+      body: copy.body
     });
     renderNotificationSetting(t("notifications.testSent"));
   } catch (error) {
     renderNotificationSetting(error.message);
   }
+}
+
+// Mirrors the coarse shape server/pushService.js assembles for a real send.
+// Returns null when no forecast has loaded yet, which the copy builder already
+// handles by falling back to its generic variant.
+function buildTestWeatherSummary(weather) {
+  if (!weather) {
+    return null;
+  }
+
+  return {
+    currentTemp: weather.current?.temperature,
+    feelsLike: weather.current?.feelsLike,
+    highTemp: weather.daily?.high,
+    precipitationProbability: weather.daily?.precipitationProbability
+  };
 }
 
 // Syncs the current browser PushSubscription with the server so scheduled

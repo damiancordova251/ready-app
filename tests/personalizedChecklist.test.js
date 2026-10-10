@@ -379,4 +379,35 @@ function assertMaxThreeItems(checklist) {
   assertClothingLabelsUseWeights(checklist);
 }
 
+// A clear but cool morning must not pair sandals with a jacket. Sun used to
+// promote light footwear on its own, independent of temperature.
+{
+  const checklist = personalizedItems(makeWeather({
+    temperature: 55,
+    feelsLike: 55,
+    high: 60,
+    low: 50,
+    weatherCode: 0
+  }));
+  const footwear = findSection(checklist, "Footwear");
+  const labels = getSectionItemLabels(footwear);
+
+  assert.notEqual(labels[0], "Sandals", `Clear 55F should not lead with sandals, got ${labels[0]}.`);
+
+  // The warm case still has to work in the other direction.
+  const warm = personalizedItems(makeWeather({
+    temperature: 84,
+    feelsLike: 84,
+    high: 90,
+    low: 78,
+    weatherCode: 0
+  }));
+
+  assert.equal(
+    getSectionItemLabels(findSection(warm, "Footwear")).includes("Sandals"),
+    true,
+    "A hot clear day should still offer sandals."
+  );
+}
+
 console.log("Personalized checklist examples passed.");

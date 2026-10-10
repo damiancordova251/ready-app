@@ -250,8 +250,12 @@ function assertRemovedOptionsAbsent(items) {
     windSpeed: 25
   }), 6);
 
-  assertClothingGroup(items, "Top", "Medium-Heavy", ["Light Long-Sleeve", "Sweater", "Light Jacket"], "Cloudy windy 60s should bias toward labelled layers.");
-  assertClothingGroup(items, "Bottom", "Medium", ["Cargo Pants", "Jeans", "Pants"], "Cloudy windy 60s should bias away from shorts.");
+  // A light long-sleeve no longer leads here: at 60F with 25mph wind the
+  // warmer layers win, which is the point of the warmth bias.
+  assertClothingGroup(items, "Top", "Medium-Heavy", ["Sweater", "Light Jacket", "Hoodie"], "Cloudy windy 60s should bias toward labelled layers.");
+  // Jeans lead Cargo Pants: the two score identically here, and ties now break
+  // toward the warmer garment rather than toward whichever was listed first.
+  assertClothingGroup(items, "Bottom", "Medium", ["Jeans", "Cargo Pants", "Pants"], "Cloudy windy 60s should bias away from shorts.");
   assertNoOption(items, "Shorts", "Cloudy windy 60s should not suggest shorts.");
   assertValidWeightLabels(items);
 }
@@ -266,8 +270,8 @@ function assertRemovedOptionsAbsent(items) {
     hourlyOverrides: [rainAt(2, { probability: 70, precipitation: 0.04, weatherCode: 61 })]
   }), 6);
 
-  assertClothingGroup(items, "Top", "Medium-Heavy", ["Light Long-Sleeve", "Sweater", "Light Jacket"], "Cool rain should include normal labelled layer options.");
-  assertClothingGroup(items, "Bottom", "Medium", ["Cargo Pants", "Jeans", "Pants"], "Cool rain should include normal labelled bottom options.");
+  assertClothingGroup(items, "Top", "Medium-Heavy", ["Sweater", "Light Jacket", "Hoodie"], "Cool rain should include normal labelled layer options.");
+  assertClothingGroup(items, "Bottom", "Medium", ["Jeans", "Cargo Pants", "Pants"], "Cool rain should include normal labelled bottom options.");
   assertHasAccessory(items, ["Umbrella", "Rain Jacket"], "Rain should use umbrella/rain jacket copy.");
   assertExcludesAccessory(items, ["Sunglasses", "Hat"], "Rainy/cloudy-only forecast should not include sun protection.");
   assertRemovedOptionsAbsent(items);
@@ -347,6 +351,98 @@ function assertRemovedOptionsAbsent(items) {
     assertRemovedOptionsAbsent(items);
     assertValidWeightLabels(items);
   });
+}
+
+// --- sun protection must mean actual sun ----------------------------------
+
+function hourWithCode(offset, weatherCode) {
+  return { offset, weatherCode };
+}
+
+// WMO code 2 is "partly cloudy", not sun. It used to sit in the clear-sky set,
+// which is how sunglasses appeared on grey days. Production forecast-accuracy
+// data: 15 predictions of code 2, observed overcast 100% of the time.
+{
+  const items = recommendationItems(makeWeather({
+    temperature: 66,
+    feelsLike: 66,
+    high: 70,
+    low: 62,
+    weatherCode: 2
+  }), 6);
+
+  assertExcludesAccessory(items, ["Sunglasses", "Hat"], "Partly cloudy (code 2) should not count as sun.");
+}
+
+// One bright hour in an otherwise overcast window is not a sunny day.
+{
+  const items = recommendationItems(makeWeather({
+    temperature: 66,
+    feelsLike: 66,
+    high: 70,
+    low: 62,
+    weatherCode: 3,
+    hourlyOverrides: [hourWithCode(2, 0)]
+  }), 6);
+
+  assertExcludesAccessory(items, ["Sunglasses", "Hat"], "A single clear hour in a grey window should not trigger sun protection.");
+}
+
+// The other direction still has to work: a genuinely clear window keeps it.
+{
+  const items = recommendationItems(makeWeather({
+    temperature: 74,
+    feelsLike: 74,
+    high: 78,
+    low: 70,
+    weatherCode: 0
+  }), 6);
+
+  assertHasAccessory(items, ["Sunglasses", "Hat"], "A fully clear daytime window should still include sun protection.");
+}
+
+// --- wind should not leave you in a t-shirt --------------------------------
+
+// A 70F day with 26mph wind previously scored T-shirt and Light Long-Sleeve at
+// 98 apiece, and the tie fell to whichever was added to the list first, so the
+// headline suggestion was a t-shirt in strong wind.
+{
+  const items = recommendationItems(makeWeather({
+    temperature: 70,
+    feelsLike: 70,
+    high: 72,
+    low: 66,
+    weatherCode: 1,
+    windSpeed: 26
+  }), 6);
+  const top = findClothingGroup(items, "Top");
+
+  assert.ok(top, "Windy mild day should produce a Top group.");
+  assert.equal(
+    top.options[0],
+    "Light Long-Sleeve",
+    `Windy 70F should lead with a layer, got ${top.options[0]}.`
+  );
+  assert.notEqual(top.options[0], "T-shirt", "Windy 70F should not lead with a t-shirt.");
+}
+
+// Ties break toward the warmer garment rather than toward list order.
+{
+  const items = recommendationItems(makeWeather({
+    temperature: 55,
+    feelsLike: 55,
+    high: 59,
+    low: 51,
+    weatherCode: 3,
+    hourlyOverrides: [rainAt(2, { probability: 70, precipitation: 0.04, weatherCode: 61 })]
+  }), 6);
+  const bottom = findClothingGroup(items, "Bottom");
+
+  assert.equal(
+    bottom.options.indexOf("Jeans") < bottom.options.indexOf("Cargo Pants"),
+    true,
+    "Equal-scoring bottoms should list the warmer one first."
+  );
 }
 
 console.log("Recommendation examples passed.");

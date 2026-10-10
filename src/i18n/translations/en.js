@@ -282,8 +282,6 @@ export const en = {
     routineReminderCopy: "Scheduled reminders will use your {time} routine start.",
     scheduledServer: "The server will send a simple daily reminder at your routine start time.",
     permissionGrantedNotSaved: "Permission is granted, but server reminders were not saved. {error}",
-    testTitle: "Ready Checklist",
-    testBody: "Your weather checklist is ready."
   },
   share: {
     kicker: "Share",

@@ -1,6 +1,6 @@
 import webPush from "web-push";
 import { createChecklistReminder } from "../src/domain/reminders.js";
-import { buildNotificationCopy } from "./notificationCopy.js";
+import { buildNotificationCopy } from "../src/domain/notificationCopy.js";
 import { recordNotificationScheduled } from "./notificationEventStore.js";
 
 const OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast";

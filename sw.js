@@ -1,7 +1,7 @@
 // Bump APP_VERSION whenever cached app shell or icon assets need to be refreshed
 // for installed PWAs. Also add a matching entry to src/changelog.js each time —
 // that's what the update-available banner's "what's new" line shows.
-const APP_VERSION = "device-identity";
+const APP_VERSION = "warmer-recommendations";
 const CACHE_NAME = `ready-${APP_VERSION}`;
 
 // Core assets use network-first caching so pilot deployments are less likely to
@@ -36,6 +36,7 @@ const CORE_ASSETS = [
   "./src/domain/personalizedChecklist.js",
   "./src/domain/clothingPreferences.js",
   "./src/domain/reminders.js",
+  "./src/domain/notificationCopy.js",
   "./src/i18n/i18n.js",
   "./src/i18n/domainStrings.js",
   "./src/i18n/translations/en.js",

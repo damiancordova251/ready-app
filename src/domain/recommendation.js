@@ -4,7 +4,17 @@ import { bestNumber, formatTemp } from "../utils/format.js";
 // here makes it easier to tune recommendations without hunting through UI code.
 const RAIN_CODES = new Set([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82, 95, 96, 99]);
 const SNOW_CODES = new Set([71, 73, 75, 77, 85, 86]);
-const SUNNY_CODES = new Set([0, 1, 2]);
+// Codes 0 (clear) and 1 (mainly clear) only. WMO code 2 is "partly cloudy",
+// and it used to live here — which is why sunglasses showed up on grey days.
+// The forecast-accuracy data collected in production settled it: of 15 samples
+// where code 2 was predicted, the observed condition was overcast 100% of the
+// time and clear exactly zero times. Codes 0/1 verified clear 77% of the time.
+const CLEAR_SKY_CODES = new Set([0, 1]);
+// WMO 2 is counted as neither clear nor cloudy. Dropping it from "clear" is
+// well supported; also calling it "cloudy" would push every partly-cloudy day
+// toward heavier clothing, and 15 samples from two locations is nowhere near
+// enough to justify a change that broad. Neutral until the data says more.
+const PARTLY_CLOUDY_CODE = 2;
 const FREEZING_PRECIP_CODES = new Set([56, 57, 66, 67]);
 const READY_CHECKLIST_TITLE = "Ready Checklist:";
 const DEFAULT_FORECAST_WINDOW_HOURS = 12;
@@ -211,7 +221,7 @@ function getWindowFeatures(weather) {
   const hot = high >= HOT_TEMP || maxFeels >= HOT_TEMP - 4;
   const cloudy = hours.some(isCloudyHour) || isCloudyCode(currentCode) || isCloudyCode(dailyCode);
   const temperatureRange = Math.max(high, maxTemp) - Math.min(low, minTemp);
-  const daylightSunny = daylightHours.some((hour) => hasCode(SUNNY_CODES, hour.weatherCode));
+  const daylightSunny = hasMeaningfulSun(daylightHours);
   const sunProtection = daylightSunny && !rainProfile.umbrellaRisk && !winterPrecipRisk;
   const reasons = [];
 
@@ -262,11 +272,50 @@ function getWindowFeatures(weather) {
   };
 }
 
+// Wind strips away warmth the thermometer never shows, and overcast skies mean
+// the forecast high is rarely reached. Both make the lightest tops a worse call
+// than the number alone suggests, so they lose ground to a layer instead of
+// tying with one.
+//
+// Without this, a 70F windy day scored T-shirt and Light Long-Sleeve at exactly
+// 98 apiece, and the tie fell to whichever was added first — the T-shirt. That
+// is the "why am I being told to wear a t-shirt on a windy day" case.
+const WIND_EXPOSURE_PENALTY = 16;
+const CLOUD_EXPOSURE_PENALTY = 8;
+
+// Above this, wind and cloud stop arguing for more clothing. A 26mph breeze at
+// 92F is relief, not a chill, and overcast skies at 85F still leave a t-shirt
+// day. Without this bound the exposure rules recommended a long-sleeve at 92F.
+const EXPOSURE_RELEVANT_MAX_FEELS = 72;
+
+// Below this, a light long-sleeve is no longer the right answer to cold — a
+// sweater is. The boost used to apply at any temperature, which made an
+// overcast 45F day recommend a *lighter* top than a partly cloudy one.
+const LIGHT_LAYER_MIN_FEELS = 63;
+
+function isExposureRelevant(features) {
+  return features.maxFeels <= EXPOSURE_RELEVANT_MAX_FEELS;
+}
+
+function getExposurePenalty(features) {
+  if (!isExposureRelevant(features)) {
+    return 0;
+  }
+
+  if (features.windy) {
+    return WIND_EXPOSURE_PENALTY;
+  }
+
+  return features.cloudy ? CLOUD_EXPOSURE_PENALTY : 0;
+}
+
 function getEligibleTopOptions(features) {
   const options = [];
   const dryEnoughForLightTops = !features.rainRisk && !features.winterPrecipRisk;
-  const coldWetOrWindy = features.rainRisk || features.windy || features.cloudy;
+  const coldWetOrWindy = (features.rainRisk || features.windy || features.cloudy)
+    && isExposureRelevant(features);
   const mildRange = features.maxFeels >= 55 && features.minFeels <= 72;
+  const exposurePenalty = getExposurePenalty(features);
 
   if (features.winterPrecipRisk || features.minFeels <= 35) {
     addOption(options, "Thermal Layer", 120);
@@ -275,21 +324,25 @@ function getEligibleTopOptions(features) {
   }
 
   if (features.maxFeels >= 78 && dryEnoughForLightTops && !features.coldWind) {
-    addOption(options, "Tank Top", 86 + Math.min(features.maxFeels - 78, 8));
+    addOption(options, "Tank Top", 86 + Math.min(features.maxFeels - 78, 8) - exposurePenalty);
   }
 
   if (features.maxFeels >= 62 && features.minFeels >= 54 && !features.coldWind && !features.winterPrecipRisk) {
     const score = features.maxFeels >= 68 ? 98 : 88;
 
-    addOption(options, "T-shirt", score);
+    addOption(options, "T-shirt", score - exposurePenalty);
   }
 
   if (features.maxFeels >= 60 && features.minFeels >= 52 && !features.winterPrecipRisk) {
-    addOption(options, "Polo Shirt", features.maxFeels >= 68 ? 94 : 86);
+    addOption(options, "Polo Shirt", (features.maxFeels >= 68 ? 94 : 86) - exposurePenalty);
   }
 
   if (mildRange || features.cloudy || features.windy || features.temperatureRange >= 10) {
-    addOption(options, "Light Long-Sleeve", coldWetOrWindy ? 98 : 82);
+    addOption(
+      options,
+      "Light Long-Sleeve",
+      coldWetOrWindy && features.maxFeels >= LIGHT_LAYER_MIN_FEELS ? 98 : 82
+    );
   }
 
   if (features.maxFeels >= 58 && features.maxFeels <= 78 && features.minFeels >= 52 && !features.winterPrecipRisk) {
@@ -368,7 +421,10 @@ function getAccessoryActions(features) {
   }
 
   if (features.sunProtection) {
-    accessories.push({ type: "accessory", options: ["Sunglasses", "Hat"], priority: 70 });
+    // Ranked below the cold-weather accessories: on a clear 25F morning,
+    // gloves and a beanie matter more than glare, and sun protection used to
+    // head the list on exactly those days.
+    accessories.push({ type: "accessory", options: ["Sunglasses", "Hat"], priority: 62 });
   }
 
   if (features.minFeels <= 40 || (features.windy && features.minFeels <= 45)) {
@@ -391,8 +447,18 @@ function getAccessoryActions(features) {
 }
 
 function selectClothingOptions(candidates, fallbackOptions, features, weightMap) {
+  // Ties break toward the warmer garment. Equal scores used to be settled by
+  // whichever option happened to be added first, which is arbitrary — and the
+  // two mistakes are not equally bad. Being underdressed is uncomfortable for
+  // the whole time you are out; being slightly overdressed means carrying a
+  // layer. The forecast-accuracy data backs this up too: day-ahead forecasts
+  // ran 4.6F warmer than observed, so the error already leans toward
+  // under-dressing people.
   const ranked = dedupeOptions([...candidates, ...fallbackOptions])
-    .sort((a, b) => b.score - a.score);
+    .sort((a, b) => (
+      b.score - a.score
+      || getClothingWeight(b.item, weightMap) - getClothingWeight(a.item, weightMap)
+    ));
   const preferredCount = features.winterPrecipRisk || features.minFeels <= 35 ? 2 : 3;
   const selected = [];
 
@@ -672,6 +738,32 @@ export function hasDaylightHours(hours) {
   return getDaylightHours(Array.isArray(hours) ? hours : []).length > 0;
 }
 
+// Sun protection needs the window to be *mostly* clear, not to contain one
+// bright hour. This used to be a plain .some(), so a single clear hour in an
+// otherwise grey afternoon produced a sunglasses recommendation.
+//
+// Being strict here is worth it twice over: condition codes verified against
+// observations only 55-69% of the time in production, so one hour's code is
+// weak evidence; and the cost of the two errors is lopsided — missing
+// sunglasses on a bright day is a minor annoyance, while recommending them on
+// an overcast one makes the whole checklist look broken.
+const SUN_PROTECTION_MIN_CLEAR_SHARE = 0.5;
+const SUN_PROTECTION_MIN_CLEAR_HOURS = 2;
+
+function hasMeaningfulSun(daylightHours) {
+  if (daylightHours.length === 0) {
+    return false;
+  }
+
+  const clearHours = daylightHours.filter((hour) => hasCode(CLEAR_SKY_CODES, hour.weatherCode));
+
+  // The share carries the judgment; the hour count stops a one-hour window
+  // from passing on a single clear reading, while still allowing a genuinely
+  // short window to qualify when all of it is clear.
+  return clearHours.length >= Math.min(SUN_PROTECTION_MIN_CLEAR_HOURS, daylightHours.length)
+    && (clearHours.length / daylightHours.length) >= SUN_PROTECTION_MIN_CLEAR_SHARE;
+}
+
 function getDaylightHours(hours) {
   return hours.filter((hour) => {
     const forecastHour = parseForecastTime(hour.time).getHours();
@@ -748,7 +840,8 @@ function isCloudyCode(code) {
   const normalizedCode = Number(code);
 
   return Number.isFinite(normalizedCode)
-    && !SUNNY_CODES.has(normalizedCode)
+    && normalizedCode !== PARTLY_CLOUDY_CODE
+    && !CLEAR_SKY_CODES.has(normalizedCode)
     && !RAIN_CODES.has(normalizedCode)
     && !SNOW_CODES.has(normalizedCode);
 }

@@ -1,8 +1,6 @@
-// Generates bilingual, weather-aware scheduled-reminder copy. Pure and
-// dependency-free by design (no Node built-ins, no Supabase/network calls) so
-// the exact same file can be duplicated into
-// workers/reminder-scheduler/src/, matching the project's existing
-// server/functions duplication convention.
+// EXACT DUPLICATE of src/domain/notificationCopy.js — edit both together.
+// Workers cannot import from outside their own directory, so this copy exists
+// for the reminder-scheduler alone. Pure and dependency-free by design.
 //
 // Deliberately NOT the full recommendation engine: it surfaces the single most
 // notable condition plus the one item that condition calls for. Phrased with

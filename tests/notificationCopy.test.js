@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { buildNotificationCopy, selectNotificationVariant } from "../server/notificationCopy.js";
+import { buildNotificationCopy, selectNotificationVariant } from "../src/domain/notificationCopy.js";
 
 // --- variant selection -------------------------------------------------------
 

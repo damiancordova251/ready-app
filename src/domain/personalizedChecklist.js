@@ -420,7 +420,12 @@ function getCandidateLists(categoryId, weight, weatherNeeds) {
 
     return [
       ...(conditions.cold ? [COLD_FOOTWEAR] : []),
-      ...(conditions.sun || weight === "Light" ? [LIGHT_FOOTWEAR] : []),
+      // Warmth decides footwear, not sunshine. This used to also fire on
+      // `conditions.sun`, which put sandals at the top of a clear 63F morning
+      // while the outerwear row was recommending a puffer jacket.  The weight
+      // already carries the temperature judgment: it is only "Light" above
+      // roughly 74F, which is exactly when sandals belong.
+      ...(weight === "Light" ? [LIGHT_FOOTWEAR] : []),
       DRY_MILD_FOOTWEAR
     ];
   }

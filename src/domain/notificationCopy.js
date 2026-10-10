@@ -1,8 +1,11 @@
 // Generates bilingual, weather-aware scheduled-reminder copy. Pure and
-// dependency-free by design (no Node built-ins, no Supabase/network calls) so
-// the exact same file can be duplicated into
-// workers/reminder-scheduler/src/, matching the project's existing
-// server/functions duplication convention.
+// dependency-free by design (no Node built-ins, no Supabase/network calls).
+//
+// Lives in src/domain/ because all three runtimes need it: the browser (the
+// Settings test notification, so a test previews the real thing), the Node
+// server (server/pushService.js), and the Cloudflare Worker — which cannot
+// import across the project root and so keeps an exact duplicate at
+// workers/reminder-scheduler/src/notificationCopy.js. Edit both together.
 //
 // Deliberately NOT the full recommendation engine: it surfaces the single most
 // notable condition plus the one item that condition calls for. Phrased with

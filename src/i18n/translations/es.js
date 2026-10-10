@@ -282,8 +282,6 @@ export const es = {
     routineReminderCopy: "Los recordatorios programados usarán tu hora de rutina de las {time}.",
     scheduledServer: "El servidor enviará un recordatorio diario sencillo a la hora de inicio de tu rutina.",
     permissionGrantedNotSaved: "El permiso está otorgado, pero los recordatorios del servidor no se guardaron. {error}",
-    testTitle: "Lista de Ready",
-    testBody: "Tu lista del clima está lista."
   },
   share: {
     kicker: "Compartir",
