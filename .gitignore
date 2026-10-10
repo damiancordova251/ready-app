@@ -16,3 +16,6 @@ dist/
 
 # Personal Claude Code permission preferences (machine-local).
 .claude/settings.local.json
+
+# Editor workspace files list local paths to unrelated folders
+*.code-workspace
