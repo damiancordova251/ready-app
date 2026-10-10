@@ -7,6 +7,7 @@ import { createClient } from "@supabase/supabase-js";
 const ANALYTICS_EVENTS_TABLE_DEFAULT = "analytics_events";
 const APP_INSTALLATIONS_TABLE_DEFAULT = "app_installations";
 const FEEDBACK_SUBMISSIONS_TABLE_DEFAULT = "feedback_submissions";
+const COMFORT_FEEDBACK_TABLE_DEFAULT = "comfort_feedback";
 const CLIENT_ERRORS_TABLE_DEFAULT = "client_errors";
 const API_PERFORMANCE_EVENTS_TABLE_DEFAULT = "api_performance_events";
 const RECOMMENDATION_EVENTS_TABLE_DEFAULT = "recommendation_events";
@@ -35,6 +36,9 @@ export const ALLOWED_EVENT_NAMES = new Set([
   "feedback_prompt_postponed",
   "feedback_prompt_dismissed",
   "feedback_submitted",
+  "comfort_check_shown",
+  "comfort_check_answered",
+  "comfort_check_skipped",
   "client_error",
   "api_performance"
 ]);
@@ -114,6 +118,51 @@ export async function recordAnalyticsEvent({ installationId, eventName, category
       metadata: metadata ?? {},
       occurred_at: occurredAt ?? new Date().toISOString()
     });
+
+  if (error) {
+    throw new AnalyticsStoreError(error.message);
+  }
+}
+
+// Stores a "how did your last visit feel?" answer. Upserts on (installation,
+// day) so answering twice about the same day replaces the earlier answer
+// rather than counting that day twice.
+export async function recordComfortFeedback({
+  installationId,
+  rating,
+  recommendedForDate,
+  weatherSummary,
+  suggestions,
+  expectedTimeAwayHours,
+  appVersion
+}) {
+  const client = getClient();
+
+  // comfort_feedback has a foreign key to app_installations. That row is
+  // normally created by the session_started event fired at launch, but that
+  // event is fire-and-forget and can be lost; without this, a lost beacon
+  // would turn a real answer into a 503. ignoreDuplicates makes it insert-only,
+  // so an existing row (and its device_id) is never touched.
+  const { error: ensureError } = await client
+    .from(getTableName(APP_INSTALLATIONS_TABLE_DEFAULT, "SUPABASE_APP_INSTALLATIONS_TABLE"))
+    .upsert({ id: installationId }, { onConflict: "id", ignoreDuplicates: true });
+
+  if (ensureError) {
+    throw new AnalyticsStoreError(ensureError.message);
+  }
+
+  const { error } = await client
+    .from(getTableName(COMFORT_FEEDBACK_TABLE_DEFAULT, "SUPABASE_COMFORT_FEEDBACK_TABLE"))
+    .upsert({
+      installation_id: installationId,
+      rating,
+      recommended_for_date: recommendedForDate,
+      weather_summary: weatherSummary ?? {},
+      suggestions: suggestions ?? [],
+      expected_time_away_hours: expectedTimeAwayHours ?? null,
+      app_version: appVersion ?? null,
+      answered_at: new Date().toISOString()
+    }, { onConflict: "installation_id,recommended_for_date" });
 
   if (error) {
     throw new AnalyticsStoreError(error.message);

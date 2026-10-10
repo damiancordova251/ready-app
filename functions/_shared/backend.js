@@ -3,6 +3,7 @@ const DEFAULT_PILOT_EVENTS_TABLE = "pilot_events";
 const DEFAULT_APP_INSTALLATIONS_TABLE = "app_installations";
 const DEFAULT_ANALYTICS_EVENTS_TABLE = "analytics_events";
 const DEFAULT_FEEDBACK_SUBMISSIONS_TABLE = "feedback_submissions";
+const DEFAULT_COMFORT_FEEDBACK_TABLE = "comfort_feedback";
 const DEFAULT_REFERRALS_TABLE = "referrals";
 const DEFAULT_REFERRAL_VISITS_TABLE = "referral_visits";
 const DEFAULT_NOTIFICATION_EVENTS_TABLE = "notification_events";
@@ -47,6 +48,9 @@ export const ALLOWED_EVENT_NAMES = new Set([
   "feedback_prompt_postponed",
   "feedback_prompt_dismissed",
   "feedback_submitted",
+  "comfort_check_shown",
+  "comfort_check_answered",
+  "comfort_check_skipped",
   "client_error",
   "api_performance"
 ]);
@@ -470,6 +474,58 @@ export async function recordAnalyticsEvent({ installationId, eventName, category
         language: language ?? null,
         metadata: metadata ?? {},
         occurred_at: occurredAt ?? new Date().toISOString()
+      })
+    }
+  });
+}
+
+// Stores a "how did your last visit feel?" answer; mirrors
+// server/analyticsService.js recordComfortFeedback. Upserts on (installation,
+// day) so a second answer about the same day replaces the first.
+export async function recordComfortFeedback({
+  installationId,
+  rating,
+  recommendedForDate,
+  weatherSummary,
+  suggestions,
+  expectedTimeAwayHours,
+  appVersion
+}, env) {
+  // comfort_feedback has a foreign key to app_installations, whose row is
+  // normally created by the fire-and-forget session_started event. Insert-only
+  // (ignore-duplicates) so a lost beacon cannot turn a real answer into a 503,
+  // and an existing row — including its device_id — is never modified.
+  await supabaseFetch(env, {
+    path: appInstallationsTablePath(env),
+    searchParams: new URLSearchParams({ on_conflict: "id" }),
+    init: {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Prefer: "resolution=ignore-duplicates,return=minimal"
+      },
+      body: JSON.stringify({ id: installationId })
+    }
+  });
+
+  await supabaseFetch(env, {
+    path: comfortFeedbackTablePath(env),
+    searchParams: new URLSearchParams({ on_conflict: "installation_id,recommended_for_date" }),
+    init: {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Prefer: "resolution=merge-duplicates,return=minimal"
+      },
+      body: JSON.stringify({
+        installation_id: installationId,
+        rating,
+        recommended_for_date: recommendedForDate,
+        weather_summary: weatherSummary ?? {},
+        suggestions: suggestions ?? [],
+        expected_time_away_hours: expectedTimeAwayHours ?? null,
+        app_version: appVersion ?? null,
+        answered_at: new Date().toISOString()
       })
     }
   });
@@ -1120,6 +1176,9 @@ export async function deleteInstallationData(installationId, env) {
   deleted.feedbackSubmissions = await deleteRowsWhere(
     env, feedbackSubmissionsTablePath(env), `installation_id=eq.${installationId}`
   );
+  deleted.comfortFeedback = await deleteRowsWhere(
+    env, comfortFeedbackTablePath(env), `installation_id=eq.${installationId}`
+  );
   deleted.clientErrors = await deleteRowsWhere(
     env, clientErrorsTablePath(env), `installation_id=eq.${installationId}`
   );
@@ -1189,6 +1248,10 @@ function appInstallationsTablePath(env) {
 
 function analyticsEventsTablePath(env) {
   return encodeURIComponent(env.SUPABASE_ANALYTICS_EVENTS_TABLE || DEFAULT_ANALYTICS_EVENTS_TABLE);
+}
+
+function comfortFeedbackTablePath(env) {
+  return encodeURIComponent(env.SUPABASE_COMFORT_FEEDBACK_TABLE || DEFAULT_COMFORT_FEEDBACK_TABLE);
 }
 
 function feedbackSubmissionsTablePath(env) {

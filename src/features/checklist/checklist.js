@@ -5,6 +5,7 @@ import { getCurrentLocation, LocationAccessError } from "../../services/location
 import { fetchTodayWeather, WeatherFetchError } from "../../services/weather.js";
 import { trackPilotEvent } from "../../services/pilotAnalytics.js";
 import { recordRecommendationEvent, trackEvent } from "../../services/analytics.js";
+import { recordComfortSnapshot } from "../feedback/comfortCheck.js";
 import { t } from "../../i18n/i18n.js";
 import { formatWeatherEmoji } from "../../utils/format.js";
 import { translateDomainString } from "../../i18n/domainStrings.js";
@@ -142,6 +143,7 @@ export function renderWindowRecommendation(weather, requestedAt = new Date(), op
   state.latestWeather = weather;
   state.latestRecommendationRequestedAt = requestedAt;
   renderRecommendation(weather, timeAwayHours, renderedChecklist);
+  recordComfortSnapshot({ windowWeather, timeAwayHours, renderedChecklist, recommendation });
   trackPilotEvent("checklist_generated", {
     source: options.source ?? "unknown",
     itemCount: getChecklistItemCount(renderedChecklist),

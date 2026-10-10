@@ -1440,3 +1440,71 @@ language while keeping the selections local to this browser. */
     border-radius: 28px;
   }
 }
+
+/* Comfort check: three large, equal targets so answering is one easy tap. */
+.comfort-options {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.comfort-option {
+  min-height: 76px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.comfort-option:hover:not(:disabled),
+.comfort-option:focus-visible {
+  border-color: var(--accent);
+}
+
+.comfort-option:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.comfort-option-emoji {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+/* The shared action row is a two-column grid built for a pair of buttons;
+   here there is one quiet escape hatch, so it sits alone on the right as text
+   rather than a box that competes with the three answers. */
+.comfort-actions {
+  margin-top: 6px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.comfort-skip {
+  min-height: 40px;
+  padding: 8px 6px;
+  border: none;
+  background: none;
+  box-shadow: none;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+/* Collapsed until there is something to say. It stays in the DOM because it
+   is the aria-live region that announces "thanks" to screen readers; removing
+   it and re-adding it would not be reliably announced. */
+.comfort-message:empty {
+  min-height: 0;
+  margin: 0;
+}

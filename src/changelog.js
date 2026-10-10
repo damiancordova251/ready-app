@@ -68,5 +68,10 @@ export const CHANGELOG = [
     version: "warmer-recommendations",
     en: "Better checklists: no more sunglasses on grey days, wind and cloud now count toward warmer clothing, and when two options are equally good Ready suggests the warmer one. Your test notification also now shows exactly what a real morning reminder will say.",
     es: "Mejores listas: se acabaron las gafas de sol en días grises, el viento y las nubes ahora cuentan a favor de ropa más abrigada, y cuando dos opciones son igual de buenas Ready sugiere la más abrigada. Tu notificación de prueba ahora muestra exactamente lo que dirá un recordatorio real."
+  },
+  {
+    version: "comfort-check",
+    en: "Ready may now ask, with one tap, how yesterday's checklist felt — too cold, just right, or too warm. Your answers are how we tune the suggestions to be right for real people, not just the forecast. You can always skip it.",
+    es: "Ready ahora puede preguntarte, con un solo toque, qué tal te fue con la lista de ayer: mucho frío, perfecto o mucho calor. Tus respuestas nos ayudan a ajustar las sugerencias para personas reales, no solo para el pronóstico. Siempre puedes omitirla."
   }
 ];

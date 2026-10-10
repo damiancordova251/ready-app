@@ -46,6 +46,12 @@ function recordActiveDay() {
   }
 }
 
+// Exported so the daily comfort check can stand aside on the day this larger
+// prompt appears; two modals on one launch would feel like an ambush.
+export function willShowFeedbackPrompt() {
+  return shouldShowPrompt();
+}
+
 function shouldShowPrompt() {
   if (!hasCompletedOnboarding()) {
     return false;

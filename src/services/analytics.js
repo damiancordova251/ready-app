@@ -36,6 +36,9 @@ const ALLOWED_EVENT_NAMES = new Set([
   "feedback_prompt_postponed",
   "feedback_prompt_dismissed",
   "feedback_submitted",
+  "comfort_check_shown",
+  "comfort_check_answered",
+  "comfort_check_skipped",
   "client_error",
   "api_performance"
 ]);

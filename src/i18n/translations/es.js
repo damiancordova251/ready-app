@@ -291,6 +291,20 @@ export const es = {
     ariaLabel: "Compartir {appName}",
     message: "He estado usando {appName} para ayudarme a planear qué ponerme según el clima. Recomienda atuendos y me recuerda todo lo que necesito antes de salir.\n\nPruébalo aquí:\n{link}\n\nPara instalarlo:\n• Abre el enlace en tu navegador.\n• Toca Compartir y luego \"Agregar a pantalla de inicio\" (iPhone) o el menú y luego \"Agregar a pantalla de inicio\" / \"Instalar aplicación\" (Android)."
   },
+  comfort: {
+    kicker: "Pregunta rápida",
+    titleYesterday: "¿Qué tal te fue con la lista de ayer?",
+    titleDay: "¿Qué tal te fue con la lista del {day}?",
+    detail: "{temp}° · te sugerimos {items}",
+    detailItemsOnly: "Te sugerimos {items}",
+    detailTempOnly: "Hacía {temp}°",
+    tooCold: "Mucho frío",
+    justRight: "Perfecto",
+    tooWarm: "Mucho calor",
+    skip: "Omitir",
+    thanks: "Gracias, esto ayuda a mejorar Ready.",
+    failed: "No se pudo guardar. ¿Intentar de nuevo?"
+  },
   feedback: {
     kicker: "Comentarios",
     title: "¿Qué tal te está funcionando Ready?",

@@ -291,6 +291,20 @@ export const en = {
     ariaLabel: "Share {appName}",
     message: "I've been using {appName} to help plan what to wear based on the weather. It recommends outfits and reminds you about anything you'll need before heading out.\n\nTry it here:\n{link}\n\nTo install:\n• Open the link in your browser.\n• Tap Share, then \"Add to Home Screen\" (iPhone) or the menu button, then \"Add to Home screen\" / \"Install app\" (Android)."
   },
+  comfort: {
+    kicker: "Quick check",
+    titleYesterday: "How did yesterday's checklist feel?",
+    titleDay: "How did {day}'s checklist feel?",
+    detail: "{temp}° · we suggested {items}",
+    detailItemsOnly: "We suggested {items}",
+    detailTempOnly: "It was {temp}°",
+    tooCold: "Too cold",
+    justRight: "Just right",
+    tooWarm: "Too warm",
+    skip: "Skip",
+    thanks: "Thanks — this helps Ready get better.",
+    failed: "Couldn't save that. Try again?"
+  },
   feedback: {
     kicker: "Feedback",
     title: "How's Ready working for you?",

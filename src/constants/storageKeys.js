@@ -16,3 +16,4 @@ export const INSTALLATION_ID_STORAGE_KEY = "readyPilotAnonymousDeviceId";
 export const REFERRAL_CODE_STORAGE_KEY = "readyReferralCode";
 export const PENDING_REFERRAL_VISIT_STORAGE_KEY = "readyPendingReferralVisit";
 export const INSTALL_PROMPT_STATE_STORAGE_KEY = "readyInstallPromptState";
+export const COMFORT_CHECK_STORAGE_KEY = "readyComfortCheck";

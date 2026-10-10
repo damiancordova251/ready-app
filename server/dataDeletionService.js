@@ -13,6 +13,7 @@ const TABLES = {
   recommendationEvents: ["SUPABASE_RECOMMENDATION_EVENTS_TABLE", "recommendation_events"],
   notificationEvents: ["SUPABASE_NOTIFICATION_EVENTS_TABLE", "notification_events"],
   feedbackSubmissions: ["SUPABASE_FEEDBACK_SUBMISSIONS_TABLE", "feedback_submissions"],
+  comfortFeedback: ["SUPABASE_COMFORT_FEEDBACK_TABLE", "comfort_feedback"],
   clientErrors: ["SUPABASE_CLIENT_ERRORS_TABLE", "client_errors"],
   apiPerformanceEvents: ["SUPABASE_API_PERFORMANCE_EVENTS_TABLE", "api_performance_events"],
   referrals: ["SUPABASE_REFERRALS_TABLE", "referrals"],
@@ -49,6 +50,7 @@ export async function deleteInstallationData(installationId) {
   deleted.recommendationEvents = await deleteWhere(client, TABLES.recommendationEvents, "installation_id", installationId);
   deleted.notificationEvents = await deleteWhere(client, TABLES.notificationEvents, "installation_id", installationId);
   deleted.feedbackSubmissions = await deleteWhere(client, TABLES.feedbackSubmissions, "installation_id", installationId);
+  deleted.comfortFeedback = await deleteWhere(client, TABLES.comfortFeedback, "installation_id", installationId);
   deleted.clientErrors = await deleteWhere(client, TABLES.clientErrors, "installation_id", installationId);
   deleted.apiPerformanceEvents = await deleteWhere(client, TABLES.apiPerformanceEvents, "installation_id", installationId);
   deleted.pushSubscriptions = await deleteWhere(client, TABLES.pushSubscriptions, "installation_id", installationId);

@@ -35,9 +35,11 @@ import {
   recordAnalyticsEvent,
   recordApiPerformanceEvent,
   recordClientError,
+  recordComfortFeedback,
   recordFeedbackSubmission,
   recordRecommendationEvent
 } from "./analyticsService.js";
+import { parseComfortFeedbackPayload } from "./comfortFeedback.js";
 import {
   getOrCreateReferralCode,
   isReferralStoreConfigured,
@@ -295,6 +297,32 @@ app.post("/api/feedback", async (req, res) => {
     res.status(204).send();
   } catch (error) {
     console.error("Feedback submission failed.", error);
+    res.status(503).json({ error: "Feedback could not be saved right now." });
+  }
+});
+
+// Accepts a one-tap "how did your last visit feel?" answer — the only signal
+// that measures whether the checklist itself was right, not just the forecast.
+// Not soft-failed like analytics: the person tapped a button and should be
+// told if it did not save.
+app.post("/api/comfort-feedback", async (req, res) => {
+  if (!isAnalyticsStoreConfigured()) {
+    res.status(503).json({ error: "Feedback storage is not configured." });
+    return;
+  }
+
+  const parsed = parseComfortFeedbackPayload(req.body);
+
+  if (!parsed.ok) {
+    res.status(400).json({ error: parsed.error });
+    return;
+  }
+
+  try {
+    await recordComfortFeedback(parsed.value);
+    res.status(204).send();
+  } catch (error) {
+    console.error("Comfort feedback failed.", error);
     res.status(503).json({ error: "Feedback could not be saved right now." });
   }
 });

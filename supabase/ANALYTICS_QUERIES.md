@@ -37,6 +37,33 @@ order by event_count desc;
 > applied; earlier rows are each treated as their own device, so historical
 > counts stay inflated and only new traffic gets collapsed.
 
+## Is the checklist right? (comfort calibration)
+
+The forecast-accuracy tables measure whether the *forecast* was right. This
+measures whether the *checklist* was — from the one-tap "too cold / just right
+/ too warm" people answer about their previous visit.
+
+```sql
+select * from public.v_comfort_calibration;
+```
+
+Read it band by band. A calibrated engine has `just_right` dominating every
+row. A band that leans `too_cold` is where clothing weights need to move
+warmer; `too_warm`, lighter. Don't act on a band with only a handful of
+answers — wait for it to fill in.
+
+What people were actually wearing when they said it felt wrong:
+
+```sql
+select recommended_for_date, rating,
+       weather_summary ->> 'feelsLike' as feels_like,
+       weather_summary ->> 'windMax'   as wind,
+       suggestions
+from public.comfort_feedback
+where rating <> 'just_right'
+order by recommended_for_date desc;
+```
+
 ## Daily / weekly / monthly active installations
 
 ```sql
