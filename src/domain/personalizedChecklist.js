@@ -168,12 +168,22 @@ const DRY_MILD_FOOTWEAR = [
   "Dress shoes",
   "Heels"
 ];
+// Snow boots are for snow, or for genuinely freezing days when ice is a real
+// risk. They used to sit in the ordinary cold-day list, and since the default
+// wardrobe has no ankle boots, any day dipping to ~45F led with snow boots
+// under a dry sky.
 const COLD_FOOTWEAR = [
+  "Ankle boots",
+  "Sneakers",
+  "Clogs"
+];
+const FREEZING_FOOTWEAR = [
   "Ankle boots",
   "Snow boots",
   "Sneakers",
   "Clogs"
 ];
+const OPEN_TOED_FOOTWEAR = new Set(["Sandals", "Slides", "Flip-flops"]);
 const RAIN_FOOTWEAR = ["Rain boots"];
 const SNOW_FOOTWEAR = ["Snow boots"];
 
@@ -418,8 +428,8 @@ function getCandidateLists(categoryId, weight, weatherNeeds) {
       return [RAIN_FOOTWEAR];
     }
 
-    return [
-      ...(conditions.cold ? [COLD_FOOTWEAR] : []),
+    const lists = [
+      ...(conditions.veryCold ? [FREEZING_FOOTWEAR] : conditions.cold ? [COLD_FOOTWEAR] : []),
       // Warmth decides footwear, not sunshine. This used to also fire on
       // `conditions.sun`, which put sandals at the top of a clear 63F morning
       // while the outerwear row was recommending a puffer jacket.  The weight
@@ -428,6 +438,13 @@ function getCandidateLists(categoryId, weight, weatherNeeds) {
       ...(weight === "Light" ? [LIGHT_FOOTWEAR] : []),
       DRY_MILD_FOOTWEAR
     ];
+
+    // The everyday list is appended at every temperature, and it includes
+    // sandals — which is how "Sandals" turned up as the second option on a
+    // 15F morning. Once it is cool, open-toed shoes drop out of every list.
+    return conditions.cool || conditions.cold
+      ? lists.map((list) => list.filter((item) => !OPEN_TOED_FOOTWEAR.has(item)))
+      : lists;
   }
 
   return [];

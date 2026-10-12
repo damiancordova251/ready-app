@@ -410,4 +410,30 @@ function assertMaxThreeItems(checklist) {
   );
 }
 
+// Snow boots belong to snow and to genuinely freezing days, not to any day
+// that dips into the 40s. With the default wardrobe (no ankle boots) a dry 44F
+// morning used to lead with them.
+{
+  const dryCold = personalizedItems(makeWeather({ temperature: 44, feelsLike: 44, high: 48, low: 40, weatherCode: 0 }));
+  const footwear = findSection(dryCold, "Footwear");
+  const labels = getSectionItemLabels(footwear);
+
+  assert.equal(labels.includes("Snow boots"), false, `Dry 44F should not suggest snow boots, got ${labels.join(", ")}.`);
+  assert.equal(footwear.label, "Medium-Heavy", "A cold day is a step below snowstorm footwear.");
+  assert.equal(labels.some((label) => ["Sandals", "Slides", "Flip-flops"].includes(label)), false, "No open-toed shoes when it is cold.");
+
+  const freezing = personalizedItems(makeWeather({ temperature: 15, feelsLike: 15, high: 19, low: 11, weatherCode: 0 }));
+
+  assert.equal(
+    getSectionItemLabels(findSection(freezing, "Footwear")).includes("Snow boots"),
+    true,
+    "A dry 15F morning still warrants snow boots: that is where ice is a real risk."
+  );
+  assert.equal(
+    getSectionItemLabels(findSection(freezing, "Footwear")).includes("Sandals"),
+    false,
+    "Sandals must never appear at 15F, not even as an alternative."
+  );
+}
+
 console.log("Personalized checklist examples passed.");

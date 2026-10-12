@@ -73,5 +73,10 @@ export const CHANGELOG = [
     version: "comfort-check",
     en: "Ready may now ask, with one tap, how yesterday's checklist felt — too cold, just right, or too warm. Your answers are how we tune the suggestions to be right for real people, not just the forecast. You can always skip it.",
     es: "Ready ahora puede preguntarte, con un solo toque, qué tal te fue con la lista de ayer: mucho frío, perfecto o mucho calor. Tus respuestas nos ayudan a ajustar las sugerencias para personas reales, no solo para el pronóstico. Siempre puedes omitirla."
+  },
+  {
+    version: "footwear-sense",
+    en: "Smarter shoes: snow boots now show up only for snow or freezing days, and sandals no longer appear once it turns cool.",
+    es: "Calzado más sensato: las botas de nieve ahora aparecen solo con nieve o temperaturas bajo cero, y las sandalias ya no aparecen cuando hace fresco."
   }
 ];

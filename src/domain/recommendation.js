@@ -652,8 +652,11 @@ function getPersonalizedFootwearWeight(features) {
     return "Heavy";
   }
 
+  // A cold day is not a snowstorm. "Heavy" footwear is reserved for the branch
+  // above (snow, ice, or freezing); a merely cold day is one step lighter, which
+  // also steers the fallback to ankle boots instead of snow boots.
   if (features.rainRisk || features.cold || features.coldWind || features.minFeels <= 45) {
-    return features.rainRisk && features.minFeels > 45 ? "Medium" : "Heavy";
+    return features.rainRisk && features.minFeels > 45 ? "Medium" : "Medium-Heavy";
   }
 
   return features.hot || features.maxFeels >= 74 ? "Light" : "Medium";
