@@ -39,6 +39,8 @@ const ALLOWED_EVENT_NAMES = new Set([
   "comfort_check_shown",
   "comfort_check_answered",
   "comfort_check_skipped",
+  "notification_permission_revoked",
+  "notification_permission_restored",
   "client_error",
   "api_performance"
 ]);

@@ -17,3 +17,4 @@ export const REFERRAL_CODE_STORAGE_KEY = "readyReferralCode";
 export const PENDING_REFERRAL_VISIT_STORAGE_KEY = "readyPendingReferralVisit";
 export const INSTALL_PROMPT_STATE_STORAGE_KEY = "readyInstallPromptState";
 export const COMFORT_CHECK_STORAGE_KEY = "readyComfortCheck";
+export const LAST_NOTIFICATION_PERMISSION_STORAGE_KEY = "readyLastNotificationPermission";

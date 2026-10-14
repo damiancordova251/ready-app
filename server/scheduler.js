@@ -6,6 +6,7 @@ export function startReminderScheduler({
   getSubscriptions,
   markSent,
   removeSubscription,
+  recordExpired,
   sendReminder,
   intervalMs = 30000
 }) {
@@ -15,6 +16,7 @@ export function startReminderScheduler({
       getSubscriptions,
       markSent,
       removeSubscription,
+      recordExpired,
       sendReminder
     }).catch((error) => {
       console.error("Reminder scheduler check failed.", error);
@@ -32,6 +34,7 @@ export async function checkSubscriptions({
   getSubscriptions,
   markSent,
   removeSubscription,
+  recordExpired = async () => {},
   sendReminder
 }) {
   const subscriptions = await getSubscriptions();
@@ -54,6 +57,14 @@ export async function checkSubscriptions({
       console.log(`Sent Ready Checklist reminder to ${record.id} for ${localTime.dateKey}`);
     } catch (error) {
       if (error?.subscriptionGone) {
+        // Recorded first: once the row is gone, nothing says which
+        // installation it belonged to. See recordSubscriptionExpired.
+        try {
+          await recordExpired(record, error.statusCode, now);
+        } catch (recordError) {
+          console.error(`Could not record expiry for ${record.id}; removing it anyway.`, recordError);
+        }
+
         await removeSubscription(record.id);
         console.log(`Removed expired push subscription ${record.id}`);
         return;

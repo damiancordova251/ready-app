@@ -39,6 +39,8 @@ export const ALLOWED_EVENT_NAMES = new Set([
   "comfort_check_shown",
   "comfort_check_answered",
   "comfort_check_skipped",
+  "notification_permission_revoked",
+  "notification_permission_restored",
   "client_error",
   "api_performance"
 ]);
@@ -163,6 +165,37 @@ export async function recordComfortFeedback({
       app_version: appVersion ?? null,
       answered_at: new Date().toISOString()
     }, { onConflict: "installation_id,recommended_for_date" });
+
+  if (error) {
+    throw new AnalyticsStoreError(error.message);
+  }
+}
+
+// The closest thing to an uninstall signal a web app gets: the push service
+// rejected a reminder with 404/410 because the subscription no longer exists.
+// That happens when the PWA is removed, but also when notification permission
+// is revoked or site data is cleared — so it means "unreachable", not strictly
+// "uninstalled". Mirrors the Worker's recordSubscriptionExpired.
+export async function recordSubscriptionExpired(record, statusCode, now = new Date()) {
+  if (!record?.installationId) {
+    return;
+  }
+
+  const subscribedMs = Date.parse(record.createdAt);
+  const { error } = await getClient()
+    .from(getTableName(ANALYTICS_EVENTS_TABLE_DEFAULT, "SUPABASE_ANALYTICS_EVENTS_TABLE"))
+    .insert({
+      installation_id: record.installationId,
+      event_name: "push_subscription_expired",
+      category: "notifications",
+      metadata: {
+        statusCode: Number.isInteger(statusCode) ? statusCode : null,
+        daysSubscribed: Number.isFinite(subscribedMs)
+          ? Math.max(0, Math.floor((now.getTime() - subscribedMs) / (24 * 60 * 60 * 1000)))
+          : null
+      },
+      occurred_at: now.toISOString()
+    });
 
   if (error) {
     throw new AnalyticsStoreError(error.message);

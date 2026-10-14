@@ -78,5 +78,10 @@ export const CHANGELOG = [
     version: "footwear-sense",
     en: "Smarter shoes: snow boots now show up only for snow or freezing days, and sandals no longer appear once it turns cool.",
     es: "Calzado más sensato: las botas de nieve ahora aparecen solo con nieve o temperaturas bajo cero, y las sandalias ya no aparecen cuando hace fresco."
+  },
+  {
+    version: "bring-this-reminders",
+    en: "Morning reminders now tell you what to bring instead of the odds — like \"☂️ You might want to bring an umbrella\" — with new ones for snow, freezing mornings, wind, and hot sunny days.",
+    es: "Los recordatorios de la mañana ahora te dicen qué llevar en lugar de las probabilidades, como \"☂️ Quizás quieras llevar un paraguas\", con nuevos para nieve, mañanas heladas, viento y días de calor y sol."
   }
 ];

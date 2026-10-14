@@ -5,6 +5,8 @@ import { getLocale, t } from "../../i18n/i18n.js";
 import { getSavedRoutineStartTime } from "../settings/routineStart.js";
 import { createChecklistReminder } from "../../domain/reminders.js";
 import { buildNotificationCopy } from "../../domain/notificationCopy.js";
+import { classifyPermissionChange } from "../../domain/notificationPermission.js";
+import { LAST_NOTIFICATION_PERMISSION_STORAGE_KEY } from "../../constants/storageKeys.js";
 import { trackPilotEvent } from "../../services/pilotAnalytics.js";
 import { trackEvent } from "../../services/analytics.js";
 import {
@@ -23,10 +25,36 @@ import {
 // reminders. The single Settings button doubles as an enable/disable toggle:
 // its label and action depend on whether a subscription is currently saved.
 export function initNotificationSettings() {
+  checkPermissionChange();
   renderNotificationSetting();
   elements.enableNotificationsButton.addEventListener("click", handleNotificationButtonClick);
   elements.testNotificationButton.addEventListener("click", handleTestNotification);
   elements.testNotificationButton.textContent = t("settings.sendTest");
+}
+
+// Notices when someone has switched Ready's notifications off (or back on) in
+// their device settings since the last launch. See
+// domain/notificationPermission.js for why this can only be caught on launch.
+function checkPermissionChange() {
+  const current = getNotificationEnvironment().permission;
+  let previous = null;
+
+  try {
+    previous = window.localStorage.getItem(LAST_NOTIFICATION_PERMISSION_STORAGE_KEY);
+    window.localStorage.setItem(LAST_NOTIFICATION_PERMISSION_STORAGE_KEY, current);
+  } catch (error) {
+    return;
+  }
+
+  const change = classifyPermissionChange(previous, current);
+
+  if (change) {
+    trackEvent(`notification_permission_${change}`, {
+      from: previous,
+      to: current,
+      remindersWereOn: Boolean(state.pushSubscriptionId)
+    });
+  }
 }
 
 // Wired as the routine-start slider's onInput callback from the app bootstrap
@@ -129,19 +157,34 @@ async function handleTestNotification() {
   }
 }
 
-// Mirrors the coarse shape server/pushService.js assembles for a real send.
-// Returns null when no forecast has loaded yet, which the copy builder already
-// handles by falling back to its generic variant.
+// Mirrors the shape domain/notificationCopy.js parseReminderWeather() builds
+// for a real send, derived from the forecast the app already has. Returns null
+// when no forecast has loaded yet, which the copy builder handles by falling
+// back to its generic variant.
 function buildTestWeatherSummary(weather) {
   if (!weather) {
     return null;
   }
 
+  // The real reminder reads daily totals. The app keeps hourly detail
+  // instead, so today's coldest feels-like and total snowfall come from
+  // today's hours.
+  const today = typeof weather.daily?.date === "string" ? weather.daily.date : null;
+  const hours = (weather.hourly ?? []).filter((hour) => (
+    today ? String(hour.time).startsWith(today) : true
+  )).slice(0, 24);
+  const feels = hours.map((hour) => hour.feelsLike).filter(Number.isFinite);
+  const snow = hours.map((hour) => hour.snowfall).filter(Number.isFinite);
+
   return {
-    currentTemp: weather.current?.temperature,
-    feelsLike: weather.current?.feelsLike,
-    highTemp: weather.daily?.high,
-    precipitationProbability: weather.daily?.precipitationProbability
+    currentTemp: weather.current?.temperature ?? null,
+    feelsLike: weather.current?.feelsLike ?? null,
+    lowFeelsLike: feels.length > 0 ? Math.min(...feels) : null,
+    highTemp: weather.daily?.high ?? null,
+    precipitationProbability: weather.daily?.precipitationProbability ?? null,
+    snowfall: snow.length > 0 ? snow.reduce((total, value) => total + value, 0) : null,
+    windMax: weather.daily?.windMax ?? null,
+    weatherCode: weather.daily?.weatherCode ?? null
   };
 }
 

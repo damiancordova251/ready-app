@@ -64,6 +64,62 @@ where rating <> 'just_right'
 order by recommended_for_date desc;
 ```
 
+## Who stopped getting reminders (uninstalls and muting)
+
+Browsers never announce an uninstall or a mute, so these are the traces each
+leaves behind:
+
+- **`push_subscription_expired`** — written by the reminder scheduler when the
+  push service rejects a reminder (404/410). Usually means Ready was removed
+  from the home screen; it also happens when notifications are blocked or site
+  data is cleared. Read it as "unreachable", not strictly "uninstalled". The
+  subscription is deleted right after, so this event is the only record.
+- **`notification_permission_revoked` / `_restored`** — notifications switched
+  off (or back on) in device settings. Only noticed the next time the app is
+  opened, so someone who mutes Ready and never returns is never counted here —
+  though their next reminder will usually come back as an expiry above.
+- **`notification_opt_out`** — turned off with Ready's own Settings button.
+
+Short-lived "mute for an hour" or Focus modes are invisible to web apps.
+
+```sql
+-- Each way of stopping, per week.
+select date_trunc('week', occurred_at)::date as week, event_name, count(*)
+from public.analytics_events
+where event_name in ('push_subscription_expired', 'notification_permission_revoked',
+                     'notification_permission_restored', 'notification_opt_out')
+group by 1, 2
+order by 1 desc, 2;
+
+-- How long reminders lasted before a device became unreachable.
+select (metadata ->> 'daysSubscribed')::int as days_subscribed, count(*) as devices
+from public.analytics_events
+where event_name = 'push_subscription_expired'
+group by 1
+order by 1;
+
+-- The last reminder message each person saw before switching notifications off.
+-- If one variant keeps showing up here, that message is the one costing you.
+select n.message_variant, count(*) as times_seen_last
+from public.analytics_events e
+cross join lateral (
+  select message_variant
+  from public.notification_events
+  where installation_id = e.installation_id
+    and scheduled_at < e.occurred_at
+  order by scheduled_at desc
+  limit 1
+) n
+where e.event_name in ('notification_permission_revoked', 'notification_opt_out', 'push_subscription_expired')
+group by 1
+order by 2 desc;
+```
+
+Reminder variants are `snow`, `rain`, `freezing`, `cold`, `wind`, `sun`,
+`layers`, and `generic`. Rows written before 14 Oct 2026 use the older
+`rain`/`cold`/`warm` set, whose titles stated the weather rather than what to
+bring.
+
 ## Daily / weekly / monthly active installations
 
 ```sql

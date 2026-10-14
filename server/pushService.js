@@ -1,6 +1,6 @@
 import webPush from "web-push";
 import { createChecklistReminder } from "../src/domain/reminders.js";
-import { buildNotificationCopy } from "../src/domain/notificationCopy.js";
+import { buildNotificationCopy, buildReminderWeatherUrl, parseReminderWeather } from "../src/domain/notificationCopy.js";
 import { recordNotificationScheduled } from "./notificationEventStore.js";
 
 const OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast";
@@ -72,43 +72,15 @@ async function buildReminderPayload(record) {
 // A small, coarse-only Open-Meteo request — just enough to pick one message
 // variant, not the full recommendation engine's forecast window.
 async function fetchCoarseWeatherSummary(latitude, longitude) {
-  const url = new URL(OPEN_METEO_URL);
-
-  url.search = new URLSearchParams({
-    latitude: latitude.toFixed(1),
-    longitude: longitude.toFixed(1),
-    current: "temperature_2m,apparent_temperature",
-    daily: "temperature_2m_max,precipitation_probability_max",
-    temperature_unit: "fahrenheit",
-    timezone: "auto",
-    forecast_days: "1"
-  }).toString();
-
-  const response = await fetch(url);
+  const response = await fetch(buildReminderWeatherUrl(OPEN_METEO_URL, latitude, longitude));
 
   if (!response.ok) {
     throw new Error(`Open-Meteo request failed with ${response.status}.`);
   }
 
-  const data = await response.json();
-
-  return {
-    currentTemp: toNumber(data.current?.temperature_2m),
-    feelsLike: toNumber(data.current?.apparent_temperature),
-    highTemp: toNumber(data.daily?.temperature_2m_max?.[0]),
-    precipitationProbability: toNumber(data.daily?.precipitation_probability_max?.[0])
-  };
+  return parseReminderWeather(await response.json());
 }
 
-function toNumber(value) {
-  if (value === null || value === undefined) {
-    return null;
-  }
-
-  const number = Number(value);
-
-  return Number.isFinite(number) ? number : null;
-}
 
 // Browsers return 404/410 when a push subscription is no longer valid.
 export function isSubscriptionGone(error) {

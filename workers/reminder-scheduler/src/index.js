@@ -1,8 +1,9 @@
 import { buildPushPayload } from "@block65/webcrypto-web-push";
-import { buildNotificationCopy } from "./notificationCopy.js";
+import { buildNotificationCopy, buildReminderWeatherUrl, parseReminderWeather } from "./notificationCopy.js";
 
 const DEFAULT_TABLE_NAME = "push_subscriptions";
 const DEFAULT_NOTIFICATION_EVENTS_TABLE = "notification_events";
+const DEFAULT_ANALYTICS_EVENTS_TABLE = "analytics_events";
 const DEFAULT_CRON_WINDOW_MINUTES = 5;
 const OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast";
 const FALLBACK_REMINDER = {
@@ -63,6 +64,7 @@ export async function runReminderScheduler({ env, now = new Date() }) {
       console.log(`Sent Ready Checklist reminder to ${record.id} for ${localTime.dateKey}.`);
     } catch (error) {
       if (isSubscriptionGone(error)) {
+        await recordSubscriptionExpired(record, error.statusCode, now, env);
         await removeSubscription(record.id, env);
         summary.removed += 1;
         console.log(`Removed expired push subscription ${record.id}.`);
@@ -110,6 +112,51 @@ async function markReminderSent(id, localDate, env) {
       })
     }
   });
+}
+
+// The closest thing to an uninstall signal a web app gets. Browsers fire no
+// event when a PWA is removed, but its push subscription dies with it, and the
+// push service answers the next reminder with 404/410. The same happens when
+// notification permission is revoked or site data is cleared, so this means
+// "this device can no longer be reached", not strictly "uninstalled".
+//
+// Recorded before the subscription row is deleted, because afterwards there is
+// nothing left to say which installation it belonged to. Best-effort: a failure
+// here must never stop the cleanup that keeps the scheduler from retrying a
+// dead endpoint forever.
+export async function recordSubscriptionExpired(record, statusCode, now, env) {
+  if (!record.installationId) {
+    return;
+  }
+
+  const subscribedMs = Date.parse(record.createdAt);
+
+  try {
+    await supabaseFetch(env, {
+      path: analyticsEventsTablePath(env),
+      init: {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Prefer: "return=minimal"
+        },
+        body: JSON.stringify({
+          installation_id: record.installationId,
+          event_name: "push_subscription_expired",
+          category: "notifications",
+          metadata: {
+            statusCode: Number.isInteger(statusCode) ? statusCode : null,
+            daysSubscribed: Number.isFinite(subscribedMs)
+              ? Math.max(0, Math.floor((now.getTime() - subscribedMs) / (24 * 60 * 60 * 1000)))
+              : null
+          },
+          occurred_at: now.toISOString()
+        })
+      }
+    });
+  } catch (error) {
+    console.error(`Could not record expiry for ${record.id}; removing it anyway.`, error);
+  }
 }
 
 async function removeSubscription(id, env) {
@@ -211,43 +258,15 @@ async function recordNotificationScheduled(record, variant, weatherContext, env)
 }
 
 async function fetchCoarseWeatherSummary(latitude, longitude) {
-  const url = new URL(OPEN_METEO_URL);
-
-  url.search = new URLSearchParams({
-    latitude: latitude.toFixed(1),
-    longitude: longitude.toFixed(1),
-    current: "temperature_2m,apparent_temperature",
-    daily: "temperature_2m_max,precipitation_probability_max",
-    temperature_unit: "fahrenheit",
-    timezone: "auto",
-    forecast_days: "1"
-  }).toString();
-
-  const response = await fetch(url);
+  const response = await fetch(buildReminderWeatherUrl(OPEN_METEO_URL, latitude, longitude));
 
   if (!response.ok) {
     throw new Error(`Open-Meteo request failed with ${response.status}.`);
   }
 
-  const data = await response.json();
-
-  return {
-    currentTemp: toWeatherNumber(data.current?.temperature_2m),
-    feelsLike: toWeatherNumber(data.current?.apparent_temperature),
-    highTemp: toWeatherNumber(data.daily?.temperature_2m_max?.[0]),
-    precipitationProbability: toWeatherNumber(data.daily?.precipitation_probability_max?.[0])
-  };
+  return parseReminderWeather(await response.json());
 }
 
-function toWeatherNumber(value) {
-  if (value === null || value === undefined) {
-    return null;
-  }
-
-  const number = Number(value);
-
-  return Number.isFinite(number) ? number : null;
-}
 
 async function supabaseFetch(env, { path, searchParams = new URLSearchParams(), init = {} }) {
   const url = new URL(`/rest/v1/${path}`, env.SUPABASE_URL);
@@ -316,6 +335,10 @@ function getCronWindowMinutes(value) {
   return Number.isInteger(minutes) && minutes > 0 && minutes <= 30
     ? minutes
     : DEFAULT_CRON_WINDOW_MINUTES;
+}
+
+function analyticsEventsTablePath(env) {
+  return encodeURIComponent(env.SUPABASE_ANALYTICS_EVENTS_TABLE || DEFAULT_ANALYTICS_EVENTS_TABLE);
 }
 
 function tablePath(env) {

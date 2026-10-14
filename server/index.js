@@ -37,7 +37,8 @@ import {
   recordClientError,
   recordComfortFeedback,
   recordFeedbackSubmission,
-  recordRecommendationEvent
+  recordRecommendationEvent,
+  recordSubscriptionExpired
 } from "./analyticsService.js";
 import { parseComfortFeedbackPayload } from "./comfortFeedback.js";
 import {
@@ -567,6 +568,7 @@ app.listen(port, host, () => {
     getSubscriptions: getAllSubscriptions,
     markSent: markReminderSent,
     removeSubscription,
+    recordExpired: recordSubscriptionExpired,
     sendReminder,
     intervalMs: schedulerIntervalMs
   });
